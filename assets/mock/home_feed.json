@@ -1,0 +1,118 @@
+{
+    "carousel": [
+        {
+            "streamId": 101,
+            "streamKey": "stream_101_xyz",
+            "streamerId": 1001,
+            "streamerName": "푸휴",
+            "streamerProfileImageUrl": "https://example.com/profiles/1001.jpg",
+            "title": "명초 성장방송!",
+            "viewerCount": 92,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb1.jpg",
+            "hashtags": [
+                "명초",
+                "워더링웨이브",
+                "성장방송"
+            ]
+        },
+        {
+            "streamId": 102,
+            "streamKey": "stream_102_abc",
+            "streamerId": 1002,
+            "streamerName": "루나",
+            "streamerProfileImageUrl": "https://example.com/profiles/1002.jpg",
+            "title": "밤새 수다떨 준비 완료",
+            "viewerCount": 154,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb2.jpg",
+            "hashtags": [
+                "밤샘",
+                "잡담",
+                "소통"
+            ]
+        },
+        {
+            "streamId": 103,
+            "streamKey": "stream_103_def",
+            "streamerId": 1003,
+            "streamerName": "게임좌",
+            "streamerProfileImageUrl": "https://example.com/profiles/1003.jpg",
+            "title": "롤 장인 플레이 보여드립니다",
+            "viewerCount": 201,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb3.jpg",
+            "hashtags": [
+                "롤",
+                "리그오브레전드",
+                "장인플레이"
+            ]
+        }
+    ],
+    "recommended": [
+        {
+            "streamId": 201,
+            "streamKey": "stream_201_ghi",
+            "streamerId": 1004,
+            "streamerName": "다쥬",
+            "streamerProfileImageUrl": "https://example.com/profiles/1004.jpg",
+            "title": "패밀리가 떴다 같이보기 (오늘 짧방)",
+            "viewerCount": 6370,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb4.jpg",
+            "hashtags": [
+                "같이보기",
+                "패떴",
+                "짧방"
+            ]
+        },
+        {
+            "streamId": 202,
+            "streamKey": "stream_202_jkl",
+            "streamerId": 1005,
+            "streamerName": "동그레",
+            "streamerProfileImageUrl": "https://example.com/profiles/1005.jpg",
+            "title": "2시 스타 수업 시작합니다!",
+            "viewerCount": 2438,
+            "streamStatus": "live",
+            "thumbnailUrl": "https://example.com/thumb5.jpg",
+            "hashtags": [
+                "스타크래프트",
+                "김정민",
+                "수업"
+            ]
+        },
+        {
+            "streamId": 203,
+            "streamKey": "stream_203_mno",
+            "streamerId": 1006,
+            "streamerName": "엠버센",
+            "streamerProfileImageUrl": "https://example.com/profiles/1006.jpg",
+            "title": "10인큐 도전! 롤빡겜 ㄱㄱ",
+            "viewerCount": 2351,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb6.jpg",
+            "hashtags": [
+                "롤",
+                "빡겜",
+                "10인큐"
+            ]
+        },
+        {
+            "streamId": 204,
+            "streamKey": "stream_204_mno",
+            "streamerId": 1007,
+            "streamerName": "스트리머1007",
+            "streamerProfileImageUrl": "https://example.com/profiles/1007.jpg",
+            "title": "스타 5인큐 빡겜중",
+            "viewerCount": 231,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb7.jpg",
+            "hashtags": [
+                "스타크래프트",
+                "빡겜",
+                "5인큐"
+            ]
+        }
+    ]
+}
