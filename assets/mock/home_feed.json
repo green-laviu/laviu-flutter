@@ -5,11 +5,11 @@
             "streamKey": "stream_101_xyz",
             "streamerId": 1001,
             "streamerName": "푸휴",
-            "streamerProfileImageUrl": "https://example.com/profiles/1001.jpg",
+            "streamerProfileImageUrl": "https://i.pravatar.cc/100?img=1",
             "title": "명초 성장방송!",
             "viewerCount": 92,
             "streamStatus": "LIVE",
-            "thumbnailUrl": "https://example.com/thumb1.jpg",
+            "thumbnailUrl": "https://picsum.photos/seed/thumb1/1200/600",
             "hashtags": [
                 "명초",
                 "워더링웨이브",
