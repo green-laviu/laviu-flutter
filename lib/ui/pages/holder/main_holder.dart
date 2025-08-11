@@ -6,7 +6,6 @@ import 'package:laviu_flutter/ui/pages/holder/following/following_page.dart';
 import 'package:laviu_flutter/ui/pages/holder/home/home_page.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/my_detail_page.dart';
 import 'package:laviu_flutter/ui/pages/user/detail_page/user_detail_page.dart';
-import 'package:laviu_flutter/ui/widgets/m_dev_floating_btn.dart';
 
 import '../notification/notification_page.dart';
 
@@ -42,15 +41,6 @@ class _MainHolderState extends State<MainHolder> {
         ],
       ),
       bottomNavigationBar: _bottomNavigationBar(),
-      floatingActionButton: MDevFloatingBtn(
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => UserDetailPage()),
-          );
-        },
-        icon: Icons.person,
-      ),
     );
   }
 

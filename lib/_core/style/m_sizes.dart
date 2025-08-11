@@ -51,6 +51,7 @@ class MSizes {
   // Animation durations
   static const Duration animDurationFast = Duration(milliseconds: 200);
   static const Duration animDurationNormal = Duration(milliseconds: 400);
+  static const Duration animDurationMedium = Duration(milliseconds: 600);
   static const Duration animDurationSlow = Duration(milliseconds: 800);
 
   // Divider/Line
