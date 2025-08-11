@@ -37,6 +37,7 @@ class MColors {
   static const fillNormal = Color(0x4DD7D7D7);
   static const fillStrong = Color(0x99BCBCBC);
   static const fillAlternative = Color(0x80F3F3F3);
+  static const fillContrast = textNormal; // 라이브 시청자
 
   // 배경 색상
   static const backgroundNormal = Color(0xFFFFFFFF); // 흰 배경

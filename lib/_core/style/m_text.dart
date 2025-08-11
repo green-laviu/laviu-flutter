@@ -12,7 +12,7 @@ class MText {
   static TextStyle heading3SemiBold({Color? color}) =>
       TextStyle(fontSize: MSizes.fontL, fontWeight: FontWeight.w600, color: color);
   static TextStyle heading4({Color? color}) =>
-      TextStyle(fontSize: MSizes.fontXS, fontWeight: FontWeight.w500, color: color);
+      TextStyle(fontSize: MSizes.fontM, fontWeight: FontWeight.w500, color: color);
 
   // Input
   static TextStyle inputMedium({Color? color}) =>
