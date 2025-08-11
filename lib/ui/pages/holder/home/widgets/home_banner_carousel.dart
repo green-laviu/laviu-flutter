@@ -3,12 +3,12 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 
-class BannerCarousel extends StatelessWidget {
+class HomeBannerCarousel extends StatelessWidget {
   final PageController controller;
   final double page;
   final List<LiveStream> items;
 
-  const BannerCarousel({
+  const HomeBannerCarousel({
     super.key,
     required this.controller,
     required this.page,

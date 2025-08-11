@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
-import 'package:laviu_flutter/ui/pages/holder/home/widgets/live_row.dart';
+import 'package:laviu_flutter/ui/pages/holder/home/widgets/home_live_row.dart';
 
-class RecommendedList extends StatelessWidget {
+class HomeRecommendedList extends StatelessWidget {
   final List<LiveStream> items;
-  const RecommendedList({super.key, required this.items});
+  const HomeRecommendedList({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, index) => LiveRow(
+        (context, index) => HomeLiveRow(
           item: items[index],
           borderColor: MColors.lineNormal,
           onTap: () {

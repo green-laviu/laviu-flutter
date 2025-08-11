@@ -3,12 +3,12 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 
-class LiveRow extends StatelessWidget {
+class HomeLiveRow extends StatelessWidget {
   final LiveStream item;
   final VoidCallback onTap;
   final Color borderColor;
 
-  const LiveRow({
+  const HomeLiveRow({
     super.key,
     required this.item,
     required this.onTap,

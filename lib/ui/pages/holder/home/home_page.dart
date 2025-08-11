@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/repository/home_providers.dart';
-import 'package:laviu_flutter/ui/pages/holder/home/widgets/index.dart';
+import 'package:laviu_flutter/ui/pages/holder/home/widgets/home_index.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -77,13 +77,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
           ...feedAsync.when(
             data: (feed) => [
-              BannerCarousel(
+              HomeBannerCarousel(
                 controller: _bannerCtrl,
                 page: _bannerPage,
                 items: feed.carousel, // LiveStream 리스트 그대로 전달
               ),
-              const SectionTitle(),
-              RecommendedList(items: feed.recommended),
+              const HomeSectionTitle(),
+              HomeRecommendedList(items: feed.recommended),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
             loading: () => const [

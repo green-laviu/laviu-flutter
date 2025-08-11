@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
-class SectionTitle extends StatelessWidget {
-  const SectionTitle({super.key});
+class HomeSectionTitle extends StatelessWidget {
+  const HomeSectionTitle({super.key});
 
   @override
   Widget build(BuildContext context) {
