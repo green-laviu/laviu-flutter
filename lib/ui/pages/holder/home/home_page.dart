@@ -55,7 +55,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 );
               },
             ),
-            title: Text('홈', style: MText.heading2(color: MColors.textNormal)),
+            title: Text(
+              'LAVIU',
+              style: MText.heading2(color: MColors.textNormal),
+            ),
             actions: [
               IconButton(
                 tooltip: '알림',
