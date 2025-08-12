@@ -42,15 +42,6 @@ class _MainHolderState extends State<MainHolder> {
         ],
       ),
       bottomNavigationBar: _bottomNavigationBar(),
-      floatingActionButton: MDevFloatingBtn(
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => UserDetailPage()),
-          );
-        },
-        icon: Icons.person,
-      ),
     );
   }
 
