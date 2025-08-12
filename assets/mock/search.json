@@ -1,0 +1,199 @@
+{
+    "query": "야구",
+    "suggestions": [
+        "야구 하이라이트",
+        "프로야구 라이브",
+        "KBO",
+        "고교야구",
+        "야구 분석"
+    ],
+    "filters": [
+        "채널",
+        "라이브"
+    ],
+    "selectedFilter": "라이브",
+    "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "totalChannel": 14,
+        "totalLive": 11
+    },
+    "results": {
+        "channel": [
+            {
+                "type": "channel",
+                "id": "ch_001",
+                "name": "야구부장 공식채널",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball1.jpg",
+                "followerCount": 1082,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_002",
+                "name": "야구와 놀고싶다",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball2.jpg",
+                "followerCount": 100,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_003",
+                "name": "고교야구",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball3.jpg",
+                "followerCount": 54,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_004",
+                "name": "야구문",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball4.jpg",
+                "followerCount": 52,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_005",
+                "name": "도야구리",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball5.jpg",
+                "followerCount": 30,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_006",
+                "name": "KBO 톡톡",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball6.jpg",
+                "followerCount": 2410,
+                "isFollowing": true
+            },
+            {
+                "type": "channel",
+                "id": "ch_007",
+                "name": "야알못 탈출",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball7.jpg",
+                "followerCount": 389,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_008",
+                "name": "스탯으로 본 야구",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball8.jpg",
+                "followerCount": 915,
+                "isFollowing": false
+            },
+            {
+                "type": "channel",
+                "id": "ch_009",
+                "name": "라이브 야구방",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball9.jpg",
+                "followerCount": 1203,
+                "isFollowing": true
+            },
+            {
+                "type": "channel",
+                "id": "ch_010",
+                "name": "덕아웃 수다",
+                "thumbnailUrl": "https://cdn.soopapp.com/channel/baseball10.jpg",
+                "followerCount": 77,
+                "isFollowing": false
+            }
+        ],
+        "live": [
+            {
+                "type": "live",
+                "id": "live_01",
+                "title": "패밀리가 떴다 같이보기 (오늘 짬방)",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb1.jpg",
+                "viewers": 6370,
+                "channelName": "디주",
+                "badges": [
+                    "talk",
+                    "같이보기",
+                    "패밀리가떴다"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_02",
+                "title": "2시 스타 두번째 수업 (W. 김장민 선생님)",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb2.jpg",
+                "viewers": 2438,
+                "channelName": "동그래",
+                "badges": [
+                    "스타크래프트",
+                    "리마스터",
+                    "토크",
+                    "인터뷰"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_03",
+                "title": "10명 모으는데 15분 걸리는 게임",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb3.jpg",
+                "viewers": 2351,
+                "channelName": "엠비션",
+                "badges": [
+                    "리그 오브 레전드",
+                    "매칭대기",
+                    "엠비션"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_04",
+                "title": "KBO 오늘의 라인업 분석",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb4.jpg",
+                "viewers": 981,
+                "channelName": "KBO 톡톡",
+                "badges": [
+                    "KBO",
+                    "분석",
+                    "프리뷰"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_05",
+                "title": "스트존 공부 같이하자",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb5.jpg",
+                "viewers": 412,
+                "channelName": "스탯으로 본 야구",
+                "badges": [
+                    "규칙",
+                    "강의",
+                    "입문"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_06",
+                "title": "실시간 경기 중계 토크",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb6.jpg",
+                "viewers": 1243,
+                "channelName": "라이브 야구방",
+                "badges": [
+                    "중계",
+                    "실시간",
+                    "토크"
+                ]
+            },
+            {
+                "type": "live",
+                "id": "live_07",
+                "title": "야구 게임 랭크 달리기",
+                "thumbnailUrl": "https://cdn.soopapp.com/live/thumb7.jpg",
+                "viewers": 205,
+                "channelName": "야알못 탈출",
+                "badges": [
+                    "게임",
+                    "랭크",
+                    "러닝"
+                ]
+            }
+        ]
+    }
+}
