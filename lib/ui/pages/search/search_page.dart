@@ -52,9 +52,12 @@ class _SearchPageState extends ConsumerState<SearchPage>
         backgroundColor: MColors.backgroundNormal,
         centerTitle: false,
         titleSpacing: 0,
+        leadingWidth: 42,
         leading: IconButton(
-          icon: const Icon(Icons.close), // ← 닫기
+          icon: const Icon(Icons.close),
           color: MColors.textNeutral,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
           onPressed: () => Navigator.pop(context),
         ),
         title: _SearchField(
@@ -133,55 +136,71 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      margin: const EdgeInsets.fromLTRB(0, 8, 8, 8), // 왼쪽 0: X 아이콘과 더 붙이기
       child: SizedBox(
-        height: 40, // pill 높이
-        child: TextField(
-          controller: controller,
-          autofocus: true, // 레퍼런스처럼 커서 바로 표시
-          textInputAction: TextInputAction.search,
-          onSubmitted: onSubmitted,
-          style: MText.inputRegular(color: MColors.textNeutral),
-          decoration: InputDecoration(
-            isDense: true,
-            filled: true,
-            fillColor: MColors.white,
-            hintText: '채널, 라이브, 동영상 검색',
-            hintStyle: MText.label2Regular(color: MColors.textDisabled),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 10,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(color: MColors.lineNormal),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(color: MColors.primary.withOpacity(0.4)),
-            ),
-            // 🔍 아이콘을 필드 안으로 이동
-            suffixIcon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (controller.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    color: MColors.textAlternative,
-                    onPressed: () {
-                      controller.clear();
-                    },
-                    tooltip: '지우기',
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  color: MColors.textAlternative,
-                  onPressed: () => onSubmitted(controller.text),
-                  tooltip: '검색',
+        height: 40,
+        child: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controller, // 입력 변화에 따른 X 토글
+          builder: (context, value, _) {
+            final hasText = value.text.isNotEmpty;
+            return TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              onSubmitted: onSubmitted,
+              style: MText.inputRegular(color: MColors.textNeutral),
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: MColors.white,
+                hintText: '채널, 라이브, 동영상 검색',
+                hintStyle: MText.label2Regular(color: MColors.textDisabled),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
                 ),
-              ],
-            ),
-          ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide(color: MColors.lineNormal),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide(
+                    color: MColors.primary.withOpacity(0.4),
+                  ),
+                ),
+
+                // 기본 48px 여백 제거
+                suffixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
+                // ⬇︎ 아이콘 간격을 직접 제어
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasText)
+                      GestureDetector(
+                        onTap: () => controller.clear(),
+                        child: const Padding(
+                          padding: EdgeInsets.only(
+                            right: 12,
+                          ), // 검색간격 조절
+                          child: Icon(Icons.clear, size: 18),
+                        ),
+                      ),
+                    GestureDetector(
+                      onTap: () => onSubmitted(controller.text),
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 6), // 오른쪽 끝 여백 최소화
+                        child: Icon(Icons.search, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
