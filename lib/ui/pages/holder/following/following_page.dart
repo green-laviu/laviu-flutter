@@ -112,7 +112,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage>
                       indicatorWeight: 2,
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: const [
-                        Tab(text: '전체'),
+                        Tab(text: '채널'),
                         Tab(text: '라이브'),
                       ],
                     ),
