@@ -10,7 +10,6 @@ class ProfileRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 샘플 데이터
     final String? profileImgUrl = "https://picsum.photos/200"; // null이면 기본 아이콘
     // final profileImgUrl = "https://example.com/404.png";
     final bool isLive = true; // 라이브 상태 여부
@@ -55,7 +54,7 @@ class ProfileRow extends StatelessWidget {
                         child: Container(
                           width: profileImgSize,
                           height: profileImgSize,
-                          color: MColors.fillNormal, // fillNormal transparent
+                          color: MColors.fillNormal,
                           child: hasProfileImg
                               ? Image.network(
                                   profileImgUrl,
@@ -92,7 +91,7 @@ class ProfileRow extends StatelessWidget {
                     child: Container(
                       width: profileImgSize,
                       height: profileImgSize,
-                      color: MColors.fillNormal, // fillNormal transparent
+                      color: MColors.fillNormal,
                       child: hasProfileImg
                           ? Image.network(
                               profileImgUrl,
