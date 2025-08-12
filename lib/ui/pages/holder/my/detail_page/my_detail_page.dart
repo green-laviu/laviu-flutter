@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_elevated_btn.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_info.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_live.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_profile_row.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/update_page/my_update_page.dart';
+import 'package:laviu_flutter/ui/pages/user/detail_page/user_detail_page.dart';
+import 'package:laviu_flutter/ui/widgets/m_btn.dart';
 import 'package:laviu_flutter/ui/widgets/m_dev_floating_btn.dart';
+import 'package:laviu_flutter/ui/widgets/m_info.dart';
+import 'package:laviu_flutter/ui/widgets/m_live.dart';
+import 'package:laviu_flutter/ui/widgets/m_profile_row.dart';
 
 class MyDetailPage extends StatelessWidget {
   const MyDetailPage({super.key});
@@ -27,10 +28,10 @@ class MyDetailPage extends StatelessWidget {
               child: Column(
                 children: [
                   // 프로필
-                  ProfileRow(),
+                  MProfileRow(),
                   SizedBox(height: MSizes.gapM),
                   // 채널 관리 (유저 정보 수정) 버튼
-                  MyDetailElevatedBtn(
+                  MBtn(
                     icon: Icon(
                       CupertinoIcons.gear,
                       color: MColors.textWhite,
@@ -66,22 +67,38 @@ class MyDetailPage extends StatelessWidget {
               child: TabBarView(
                 children: [
                   // 라이브 영상 영역 (썸네일 + 제목 + 해시태그)
-                  MyDetailLive(),
+                  MLive(),
                   // 정보 영역
-                  MyDetailInfo(),
+                  MInfo(),
                 ],
               ),
             ),
           ],
         ),
-        floatingActionButton: MDevFloatingBtn(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => MyUpdatePage()),
-            );
-          },
-          icon: Icons.person,
+        floatingActionButton: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            MDevFloatingBtn(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => MyUpdatePage()),
+                );
+              },
+              icon: Icons.person,
+            ),
+            SizedBox(width: 10),
+            MDevFloatingBtn(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => UserDetailPage()),
+                );
+              },
+              icon: Icons.people,
+            ),
+          ],
         ),
       ),
     );
