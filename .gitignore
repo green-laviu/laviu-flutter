@@ -30,12 +30,18 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 ios/Flutter/
+ios/Podfile
+ios/Podfile.lock
+ios/Pods/
+ios/.symlinks/
+ios/DerivedData/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
+
 
 # Symbolication related
 app.*.symbols
