@@ -21,7 +21,7 @@ class MyDetailPage extends StatelessWidget {
           children: [
             MDevFloatingBtn(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => MyUpdatePage()),
                 );
@@ -31,7 +31,7 @@ class MyDetailPage extends StatelessWidget {
             SizedBox(width: 10),
             MDevFloatingBtn(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => UserDetailPage()),
                 );
