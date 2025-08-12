@@ -5,8 +5,8 @@ import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_badge.dart';
 
-class ProfileRow extends StatelessWidget {
-  const ProfileRow({super.key});
+class MProfileRow extends StatelessWidget {
+  const MProfileRow({super.key});
 
   @override
   Widget build(BuildContext context) {

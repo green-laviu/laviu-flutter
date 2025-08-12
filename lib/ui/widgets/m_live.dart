@@ -6,8 +6,8 @@ import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_badge.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_tag_chip.dart';
 
-class MyDetailLive extends StatelessWidget {
-  const MyDetailLive({
+class MLive extends StatelessWidget {
+  const MLive({
     super.key,
   });
 
