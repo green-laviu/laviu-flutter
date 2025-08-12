@@ -8,8 +8,14 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFEAC3C4),
       body: Center(
-        child: Text("스플래시 페이지"),
+        child: Image.asset(
+          'assets/images/splash.jpg',
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.contain,
+        ),
       ),
       floatingActionButton: MDevFloatingBtn(
         onPressed: () {
