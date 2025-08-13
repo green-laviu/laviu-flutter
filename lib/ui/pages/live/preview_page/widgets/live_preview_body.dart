@@ -3,6 +3,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_form.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_icon_bar.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_page.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
 import 'package:logger/logger.dart';
 
@@ -44,6 +45,10 @@ class LivePreviewBody extends StatelessWidget {
                       // 검증 통과 → 제출
                       Logger().d("제목 검증 통과");
                     }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => LiveStreamPage()),
+                    );
                   },
                 ),
               ),

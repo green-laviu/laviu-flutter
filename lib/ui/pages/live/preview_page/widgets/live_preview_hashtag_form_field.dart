@@ -120,8 +120,8 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
           runSpacing: MSizes.gapS, // 줄 바꿈 세로 간격
           children: _savedTagList
               .map(
-                (t) => Chip(
-                  label: Text('#$t', style: MText.label2Regular(color: MColors.primaryStrong)),
+                (tag) => Chip(
+                  label: Text('#$tag', style: MText.label2Regular(color: MColors.primaryStrong)),
                   padding: EdgeInsets.zero,
                   backgroundColor: MColors.transparent,
                   labelPadding: EdgeInsets.only(left: MSizes.gapS, right: 0),
@@ -134,7 +134,7 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
                   deleteIcon: Icon(Icons.close, size: MSizes.fontM, color: MColors.primaryStrong),
                   onDeleted: () {
                     setState(() {
-                      _savedTagList.remove(t);
+                      _savedTagList.remove(tag);
                       _errorMsg = null;
                     });
                   },
