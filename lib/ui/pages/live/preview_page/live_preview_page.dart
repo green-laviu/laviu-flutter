@@ -1,139 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_form.dart';
+import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_icon_bar.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
+import 'package:logger/logger.dart';
 
 class LivePreviewPage extends StatelessWidget {
   const LivePreviewPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // TODO: 카메라 프리뷰 위젯으로 교체
-          Container(color: MColors.primaryContainer),
+    final formKey = GlobalKey<FormState>();
 
-          // TODO: 상단 아이콘바 자리 (좌: 닫기 / 우: 마이크, 가로모드, 카메라전환, 설정)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              top: true,
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: MSizes.gapM, vertical: MSizes.gapM),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.close, color: MColors.white),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.mic, color: MColors.white),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.screen_rotation, color: MColors.white),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.flip_camera_ios, color: MColors.white),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.settings, color: MColors.white),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        FocusScope.of(context).unfocus(); // 빈영역 터치 -> 키보드 내려감
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            // TODO: 카메라 프리뷰 자리
+            Container(color: MColors.primaryBackground),
 
-          // TODO: 좌측 상단 제목 입력 필드 자리 + 제목 아래 해시태그(칩 + 입력 필드) 자리
-          Positioned(
-            left: MSizes.gapXXL,
-            right: MSizes.gapXXL,
-            top: 110,
-            child: Form(
+            // 전체 오버레이 - 아이콘바 + 제목/해시태그 폼 + "생방송 시작하기" 버튼
+            SafeArea(
               child: Column(
                 children: [
-                  // 제목 입력 필드
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: '제목',
-                      hintStyle: TextStyle(
-                        fontSize: MSizes.fontXXL,
-                        fontWeight: FontWeight.w700,
-                        color: MColors.textWhite,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
+                  // 상단 아이콘바
+                  LivePreviewIconBar(),
+
+                  // 제목 + 해시태그
+                  LivePreviewForm(formKey: formKey),
+
+                  Spacer(),
+
+                  // "생방송 시작하기" 버튼
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(MSizes.gapXXL, 0, MSizes.gapXXL, 0),
+                    child: MBtn(
+                      text: '생방송 시작하기',
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          // 검증 통과 → 제출
+                          Logger().d("제목 검증 통과");
+                        }
+                      },
                     ),
-                    style: TextStyle(
-                      fontSize: MSizes.fontXXL,
-                      fontWeight: FontWeight.w700,
-                      color: MColors.textWhite,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return '제목을 입력하세요';
-                      return null;
-                    },
-                    onChanged: (value) {},
-                  ),
-                  // 해시태그 입력 필드
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: '해시태그',
-                      hintStyle: TextStyle(
-                        fontSize: MSizes.fontM,
-                        fontWeight: FontWeight.w700,
-                        color: MColors.textWhite,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
-                    ),
-                    style: TextStyle(
-                      fontSize: MSizes.fontM,
-                      fontWeight: FontWeight.w700,
-                      color: MColors.textWhite,
-                    ),
-                    onChanged: (value) {},
                   ),
                 ],
               ),
             ),
-          ),
-
-          // TODO: 하단 중앙 '생방송 시작하기' 버튼 자리
-          Positioned(
-            left: MSizes.gapXXL,
-            right: MSizes.gapXXL,
-            bottom: 0,
-            child: SafeArea(
-              child: MBtn(
-                text: '생방송 시작하기',
-                onPressed: () {},
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

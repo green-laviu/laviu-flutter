@@ -14,7 +14,7 @@ class MyDetailTagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: MColors.transparent,
         border: Border.all(color: MColors.primaryStrong),
-        borderRadius: BorderRadius.circular(MSizes.radiusS),
+        borderRadius: BorderRadius.circular(MSizes.radiusM),
       ),
       child: Text(
         label,
