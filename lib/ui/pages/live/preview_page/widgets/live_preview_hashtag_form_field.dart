@@ -102,7 +102,7 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
           ),
         ),
 
-        // 에러 메세지 + 태그 개수
+        // 에러 메세지
         Padding(
           padding: EdgeInsets.symmetric(vertical: MSizes.gapXS),
           child: Row(
