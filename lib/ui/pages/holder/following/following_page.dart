@@ -213,7 +213,7 @@ class _ChannelRow extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isLive ? Colors.redAccent : MColors.lineNormal,
+                color: isLive ? MColors.red : MColors.lineNormal,
                 width: 2,
               ),
             ),
