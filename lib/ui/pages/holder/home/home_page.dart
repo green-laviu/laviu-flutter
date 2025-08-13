@@ -5,6 +5,7 @@ import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/repository/home_providers.dart';
 import 'package:laviu_flutter/ui/pages/holder/home/widgets/home_index.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_page.dart';
+import 'package:laviu_flutter/ui/pages/notification/notification_page.dart';
 import 'package:laviu_flutter/ui/pages/search/search_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -65,7 +66,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 tooltip: '알림',
                 icon: const Icon(Icons.notifications_none_rounded),
                 color: MColors.textNeutral,
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => NotificationPage()),
+                  );
+                },
               ),
               IconButton(
                 tooltip: '검색',

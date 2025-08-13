@@ -24,7 +24,7 @@ class MText {
     color: color,
   );
   static TextStyle heading4({Color? color}) => TextStyle(
-    fontSize: MSizes.fontXS,
+    fontSize: MSizes.fontM,
     fontWeight: FontWeight.w500,
     color: color,
   );
