@@ -78,8 +78,9 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/mock/search.json
-    - .env
     - assets/mock/home_feed.json
+    - assets/mock/following.json
+    - .env
 
   
   
