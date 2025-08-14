@@ -86,7 +86,27 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                 '채팅금지',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false, //다이얼로그 밖 탭해도 닫히지 X
+                  builder: (BuildContext context) {
+                    return MDialog(
+                      title: '채팅금지',
+                      message: '$nickname($username)님의\n채팅을 금지하시겠어요?\n현재 누적: n회\n(3회 시 자동 강제퇴장)',
+                      primaryText: '채팅금지',
+                      primaryColor: MColors.primaryDanger,
+                      onPrimaryTap: () {
+                        // 채팅금지 로직
+                      },
+                      secondaryText: '취소',
+                      onSecondaryTap: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                );
+              },
             ),
             // 강제퇴장
             ListTile(
@@ -106,6 +126,7 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                         title: '강제퇴장 취소',
                         message: '$nickname($username)님의\n 강제퇴장을 취소하시겠어요?',
                         primaryText: '예',
+                        primaryColor: MColors.primaryDanger,
                         onPrimaryTap: () {
                           // 강제퇴장 취소 로직
                         },
@@ -126,6 +147,7 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                         title: '강제퇴장',
                         message: '$nickname($username)님을\n 강제퇴장 하시겠어요?',
                         primaryText: '강제퇴장',
+                        primaryColor: MColors.primaryDanger,
                         onPrimaryTap: () {
                           // 강제퇴장 로직
                         },
