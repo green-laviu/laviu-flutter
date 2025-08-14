@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_tag_dialog.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_viewer_list_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_fps_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_quality_sheet.dart';
@@ -117,7 +118,15 @@ class LiveStreamSettingSheet extends StatelessWidget {
                 '방송 태그',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false, //다이얼로그 밖 탭해도 닫히지 X
+                  builder: (BuildContext context) {
+                    return LiveStreamTagDialog();
+                  },
+                );
+              },
             ),
           ],
         ),

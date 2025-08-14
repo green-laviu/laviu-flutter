@@ -7,6 +7,8 @@ class MDialog extends StatelessWidget {
   final String? title;
   final String? message;
 
+  final Widget? body;
+
   /// 주 버튼(오른쪽/단일 버튼)
   final String primaryText;
   final VoidCallback onPrimaryTap;
@@ -21,6 +23,7 @@ class MDialog extends StatelessWidget {
     super.key,
     this.title,
     this.message,
+    this.body,
     required this.primaryText,
     required this.onPrimaryTap,
     this.primaryColor = MColors.textNormal,
@@ -58,7 +61,9 @@ class MDialog extends StatelessWidget {
                     ),
                     SizedBox(height: MSizes.gapS),
                   ],
-                  if (message != null) ...[
+                  if (body != null) ...[
+                    body!,
+                  ] else if (message != null) ...[
                     SizedBox(height: MSizes.gapS),
                     Text(
                       message!,
