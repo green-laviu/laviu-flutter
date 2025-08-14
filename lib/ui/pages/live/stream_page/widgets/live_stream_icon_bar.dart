@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
+import 'package:laviu_flutter/ui/widgets/m_streamer_live_setting_sheet.dart';
 
 class LiveStreamIconBar extends StatelessWidget {
   const LiveStreamIconBar({
@@ -58,15 +60,28 @@ class LiveStreamIconBar extends StatelessWidget {
               // 방송 설정 버튼
               IconButton(
                 icon: Icon(Icons.settings, color: MColors.white),
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    useRootNavigator: true,
+                    isScrollControlled: false,
+                    backgroundColor: MColors.backgroundNormal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+                    ),
+                    builder: (BuildContext sheetContext) {
+                      return MStreamerLiveSettingSheet();
+                    },
+                  );
+                },
                 padding: EdgeInsets.zero,
                 visualDensity: VisualDensity(horizontal: -2, vertical: -2),
                 iconSize: 24,
               ),
+              // 종료 버튼
               Padding(
                 padding: EdgeInsets.only(left: MSizes.gapS, right: 15),
                 child: TextButton(
-                  onPressed: () {},
                   style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(MColors.grey),
                     minimumSize: WidgetStatePropertyAll(Size.zero),
@@ -79,6 +94,22 @@ class LiveStreamIconBar extends StatelessWidget {
                     '종료',
                     style: TextStyle(color: MColors.white, fontWeight: FontWeight.w900, fontSize: MSizes.fontNormal),
                   ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return MDialog(
+                          title: '방송을 종료하시겠어요?',
+                          message: '지금 방송을 종료하시면 나중에 저장안됩니다 책임안져용',
+                          primaryText: '확인',
+                          onPrimaryTap: () {
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],

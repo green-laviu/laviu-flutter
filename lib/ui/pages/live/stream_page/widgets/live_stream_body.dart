@@ -33,7 +33,7 @@ class LiveStreamBody extends StatelessWidget {
               // 상단 아이콘바
               LiveStreamIconBar(),
 
-              // 제목 + 해시태그
+              // 제목/해시태그
               LiveStreamInfo(),
 
               // 채팅 영역 (채팅 리스트 + 채팅 입력 바)
