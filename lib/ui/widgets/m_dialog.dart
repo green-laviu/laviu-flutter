@@ -90,7 +90,7 @@ class MDialog extends StatelessWidget {
                         ),
                       ),
                     ),
-                    VerticalDivider(color: MColors.fillContrast, width: 1, indent: 0, endIndent: 0),
+                    VerticalDivider(color: MColors.lineNormal, width: 1, indent: 0, endIndent: 0),
                     // 오른쪽 주 버튼
                     Expanded(
                       child: InkWell(
