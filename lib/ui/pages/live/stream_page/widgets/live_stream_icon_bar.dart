@@ -14,10 +14,20 @@ class LiveStreamIconBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 나가기 버튼
-          IconButton(
-            icon: Icon(Icons.close, color: MColors.white),
-            onPressed: () => Navigator.pop(context),
+          // 라이브 진행 시간
+          Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: MSizes.gapM, vertical: MSizes.gapXS),
+              decoration: BoxDecoration(
+                color: MColors.primaryAccent.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(MSizes.radiusCircle),
+              ),
+              child: Text(
+                '12:12:30',
+                style: TextStyle(color: MColors.white, fontWeight: FontWeight.w900, fontSize: MSizes.fontNormal),
+              ),
+            ),
           ),
           Row(
             children: [
@@ -25,21 +35,51 @@ class LiveStreamIconBar extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.mic, color: MColors.white),
                 onPressed: () {},
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                iconSize: 24,
               ),
               // 가로/세로 화면 전환 버튼
               IconButton(
                 icon: Icon(Icons.screen_rotation, color: MColors.white),
                 onPressed: () {},
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                iconSize: 24,
               ),
               // 카메라 전/후면 전환 버튼
               IconButton(
                 icon: Icon(Icons.flip_camera_ios, color: MColors.white),
                 onPressed: () {},
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                iconSize: 24,
               ),
               // 방송 설정 버튼
               IconButton(
                 icon: Icon(Icons.settings, color: MColors.white),
                 onPressed: () {},
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                iconSize: 24,
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: MSizes.gapS, right: 15),
+                child: TextButton(
+                  onPressed: () {},
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(MColors.grey),
+                    minimumSize: WidgetStatePropertyAll(Size.zero),
+                    visualDensity: VisualDensity(horizontal: 0, vertical: -1.3),
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(MSizes.radiusS)),
+                    ),
+                  ),
+                  child: Text(
+                    '종료',
+                    style: TextStyle(color: MColors.white, fontWeight: FontWeight.w900, fontSize: MSizes.fontNormal),
+                  ),
+                ),
               ),
             ],
           ),
