@@ -10,7 +10,7 @@ class LiveStreamTagDialog extends StatefulWidget {
 
   const LiveStreamTagDialog({
     super.key,
-    this.initialTags = const [],
+    this.initialTags = const ['해시', '태그', '테스트'],
   });
 
   @override
@@ -121,7 +121,7 @@ class _LiveStreamTagDialogState extends State<LiveStreamTagDialog> {
                 }
               },
               textInputAction: TextInputAction.done,
-              cursorColor: MColors.white,
+              cursorColor: MColors.textNeutral,
               decoration: InputDecoration(
                 hintText: '해시태그 (${_savedTagList.length}/3)',
                 hintStyle: TextStyle(
