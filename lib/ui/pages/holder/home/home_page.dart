@@ -95,7 +95,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 items: feed.carousel, // LiveStream 리스트 그대로 전달
               ),
               const HomeSectionTitle(),
-              HomeRecommendedList(items: feed.recommended),
+              HomeRecommendedList(lives: feed.recommended),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
             loading: () => const [
