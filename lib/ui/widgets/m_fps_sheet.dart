@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/_core/style/m_text.dart';
 
 class MFpsSheet extends StatelessWidget {
   const MFpsSheet({
@@ -27,11 +28,7 @@ class MFpsSheet extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: MSizes.gapS),
               child: Text(
                 '프레임 속도',
-                style: TextStyle(
-                  color: MColors.textNormal,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: MText.heading3Bold(color: MColors.textNormal),
               ),
             ),
             // 60fps

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_setting_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
-import 'package:laviu_flutter/ui/widgets/m_streamer_live_setting_sheet.dart';
 
 class LiveStreamIconBar extends StatelessWidget {
   const LiveStreamIconBar({
@@ -70,7 +70,7 @@ class LiveStreamIconBar extends StatelessWidget {
                       borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                     ),
                     builder: (BuildContext sheetContext) {
-                      return MStreamerLiveSettingSheet();
+                      return LiveStreamSettingSheet();
                     },
                   );
                 },

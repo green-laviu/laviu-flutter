@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_viewer_list_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_fps_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_quality_sheet.dart';
 
-class MStreamerLiveSettingSheet extends StatelessWidget {
-  const MStreamerLiveSettingSheet({
+class LiveStreamSettingSheet extends StatelessWidget {
+  const LiveStreamSettingSheet({
     super.key,
   });
 
@@ -29,7 +31,7 @@ class MStreamerLiveSettingSheet extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: MSizes.gapS),
               child: Text(
                 '방송 설정',
-                style: TextStyle(color: MColors.textNormal, fontSize: 18, fontWeight: FontWeight.w700),
+                style: MText.heading3Bold(color: MColors.textNormal),
               ),
             ),
             // 화질
@@ -92,7 +94,20 @@ class MStreamerLiveSettingSheet extends StatelessWidget {
                 '시청자 목록',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              onTap: () {},
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  useRootNavigator: true,
+                  isScrollControlled: true,
+                  backgroundColor: MColors.backgroundNormal,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+                  ),
+                  builder: (context) {
+                    return LiveStreamViewerListSheet();
+                  },
+                );
+              },
             ),
             // 방송 태그
             ListTile(

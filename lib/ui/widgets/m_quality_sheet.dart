@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/_core/style/m_text.dart';
 
 class MQualitySheet extends StatelessWidget {
   const MQualitySheet({
@@ -27,7 +28,7 @@ class MQualitySheet extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: MSizes.gapS),
               child: Text(
                 '화질',
-                style: TextStyle(color: MColors.textNormal, fontSize: 18, fontWeight: FontWeight.w700),
+                style: MText.heading3Bold(color: MColors.textNormal),
               ),
             ),
             // 고화질
