@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
 
 class LiveStreamViewerManageSheet extends StatelessWidget {
   final bool isKicked;
@@ -85,7 +86,27 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                 '채팅금지',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false, //다이얼로그 밖 탭해도 닫히지 X
+                  builder: (BuildContext context) {
+                    return MDialog(
+                      title: '채팅금지',
+                      message: '$nickname($username)님의\n채팅을 금지하시겠어요?\n현재 누적: n회\n(3회 시 자동 강제퇴장)',
+                      primaryText: '채팅금지',
+                      primaryColor: MColors.primaryDanger,
+                      onPrimaryTap: () {
+                        // 채팅금지 로직
+                      },
+                      secondaryText: '취소',
+                      onSecondaryTap: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                );
+              },
             ),
             // 강제퇴장
             ListTile(
@@ -97,8 +118,46 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
               onTap: () {
                 if (isKicked) {
                   // 강제 퇴장 취소 로직
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false, //다이얼로그 밖 탭해도 닫히지 X
+                    builder: (BuildContext context) {
+                      return MDialog(
+                        title: '강제퇴장 취소',
+                        message: '$nickname($username)님의\n 강제퇴장을 취소하시겠어요?',
+                        primaryText: '예',
+                        primaryColor: MColors.primaryDanger,
+                        onPrimaryTap: () {
+                          // 강제퇴장 취소 로직
+                        },
+                        secondaryText: '아니오',
+                        onSecondaryTap: () {
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  );
                 } else {
                   // 강제 퇴장 로직
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false, //다이얼로그 밖 탭해도 닫히지 X
+                    builder: (BuildContext context) {
+                      return MDialog(
+                        title: '강제퇴장',
+                        message: '$nickname($username)님을\n 강제퇴장 하시겠어요?',
+                        primaryText: '강제퇴장',
+                        primaryColor: MColors.primaryDanger,
+                        onPrimaryTap: () {
+                          // 강제퇴장 로직
+                        },
+                        secondaryText: '취소',
+                        onSecondaryTap: () {
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  );
                 }
               },
             ),

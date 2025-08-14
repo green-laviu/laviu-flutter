@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_setting_sheet.dart';
 
 class LivePreviewIconBar extends StatelessWidget {
   const LivePreviewIconBar({
@@ -39,7 +40,20 @@ class LivePreviewIconBar extends StatelessWidget {
               // 방송 설정 버튼
               IconButton(
                 icon: Icon(Icons.settings, color: MColors.white),
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    useRootNavigator: true,
+                    isScrollControlled: false,
+                    backgroundColor: MColors.backgroundNormal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+                    ),
+                    builder: (BuildContext sheetContext) {
+                      return LivePreviewSettingSheet();
+                    },
+                  );
+                },
               ),
             ],
           ),

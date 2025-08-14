@@ -16,6 +16,7 @@ class LivePreviewHashtagFormField extends StatefulWidget {
 class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormField> {
   final _ctrl = TextEditingController();
   final _focus = FocusNode();
+  final _scrollCtrl = ScrollController();
   final List<String> _savedTagList = []; // # 없는 태그 리스트
   String? _errorMsg;
 
@@ -36,6 +37,16 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
         _errorMsg = null;
       });
     }
+
+    // 해시태그 추가 후 스크롤을 맨 오른쪽으로 이동
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollCtrl.animateTo(
+        _scrollCtrl.position.maxScrollExtent,
+        duration: MSizes.animDurationFast,
+        curve: Curves.easeOut,
+      );
+    });
+
     _ctrl.clear();
     _focus.requestFocus(); // 커서 재활성화
   }
@@ -44,6 +55,7 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
   void dispose() {
     _ctrl.dispose();
     _focus.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -115,17 +127,19 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
         ),
 
         // 해시태그 칩 row
-        Wrap(
-          spacing: MSizes.gapS, // 가로 간격
-          runSpacing: MSizes.gapS, // 줄 바꿈 세로 간격
-          children: _savedTagList
-              .map(
-                (tag) => Chip(
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          controller: _scrollCtrl,
+          child: Row(
+            children: _savedTagList.map((tag) {
+              return Padding(
+                padding: EdgeInsets.only(right: MSizes.gapS),
+                child: Chip(
                   label: Text('#$tag', style: MText.label2Regular(color: MColors.primaryStrong)),
                   padding: EdgeInsets.zero,
                   backgroundColor: MColors.transparent,
                   labelPadding: EdgeInsets.only(left: MSizes.gapS, right: 0),
-                  visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                  visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // 위젯 크기에 맞춰 터치 영역 축소
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(MSizes.radiusM),
@@ -139,8 +153,9 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
                     });
                   },
                 ),
-              )
-              .toList(),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
