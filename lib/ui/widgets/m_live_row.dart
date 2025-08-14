@@ -3,16 +3,33 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 
-class HomeLiveRow extends StatelessWidget {
+/// 공용 라이브 카드
+class MLiveRow extends StatelessWidget {
   final LiveStream item;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// 카드 보더 색 (기본: 라인)
   final Color borderColor;
 
-  const HomeLiveRow({
+  /// 썸네일 가로폭 (기본 148)
+  final double thumbWidth;
+
+  /// 태그 노출 여부
+  final bool showTags;
+
+  /// 여백/패딩 커스터마이즈
+  final EdgeInsetsGeometry margin;
+  final EdgeInsetsGeometry padding;
+
+  const MLiveRow({
     super.key,
     required this.item,
-    required this.onTap,
-    required this.borderColor,
+    this.onTap,
+    this.borderColor = MColors.lineNormal,
+    this.thumbWidth = 148,
+    this.showTags = true,
+    this.margin = const EdgeInsets.fromLTRB(12, 6, 12, 6),
+    this.padding = const EdgeInsets.all(10),
   });
 
   @override
@@ -20,8 +37,8 @@ class HomeLiveRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-        padding: const EdgeInsets.all(10),
+        margin: margin,
+        padding: padding,
         decoration: BoxDecoration(
           color: MColors.white,
           borderRadius: BorderRadius.circular(12),
@@ -30,22 +47,21 @@ class HomeLiveRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 썸네일 (16:9) + 에러/로딩 대비
+            // 썸네일 (16:9)
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Stack(
                 children: [
                   SizedBox(
-                    width: 148,
+                    width: thumbWidth,
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Image.network(
                         item.thumbnailUrl,
                         fit: BoxFit.cover,
-                        loadingBuilder: (c, w, progress) {
-                          if (progress == null) return w;
-                          return Container(color: MColors.lineNormal);
-                        },
+                        loadingBuilder: (c, w, p) => p == null
+                            ? w
+                            : Container(color: MColors.lineNormal),
                         errorBuilder: (c, e, st) => Container(
                           color: MColors.lineNormal,
                           alignment: Alignment.center,
@@ -101,14 +117,11 @@ class HomeLiveRow extends StatelessWidget {
                     item.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: MColors.textNeutral,
-                    ),
+                    style: MText.modal3Bold(color: MColors.textNeutral),
                   ),
                   const SizedBox(height: 6),
 
-                  // 스트리머 (아바타 + 이름) — 에러 대비 + 폭 강제
+                  // 스트리머 (아바타 + 이름)
                   Row(
                     children: [
                       ClipOval(
@@ -117,14 +130,13 @@ class HomeLiveRow extends StatelessWidget {
                           width: 20,
                           height: 20,
                           fit: BoxFit.cover,
-                          loadingBuilder: (c, w, p) {
-                            if (p == null) return w;
-                            return Container(
-                              width: 20,
-                              height: 20,
-                              color: MColors.lineNormal,
-                            );
-                          },
+                          loadingBuilder: (c, w, p) => p == null
+                              ? w
+                              : Container(
+                                  width: 20,
+                                  height: 20,
+                                  color: MColors.lineNormal,
+                                ),
                           errorBuilder: (c, e, st) => Container(
                             width: 20,
                             height: 20,
@@ -133,29 +145,24 @@ class HomeLiveRow extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      // 👇 길면 말줄임 + Row 폭 안 넘치게
                       Expanded(
                         child: Text(
                           item.streamerName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: MColors.textAlternative,
-                              ),
+                          style: MText.caption(color: MColors.textAlternative),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
-
-                  // 태그
-                  // 태그 (가로 스크롤 + 페이드)
-                  SizedBox(
-                    height: 28, // Chip 높이 만큼 고정
-                    child: _TagScroller(tags: item.hashtags),
-                  ),
+                  if (showTags) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 28,
+                      child: _TagScroller(tags: item.hashtags),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -165,6 +172,8 @@ class HomeLiveRow extends StatelessWidget {
     );
   }
 }
+
+/* ---------------- helpers ---------------- */
 
 class _TagScroller extends StatelessWidget {
   final List<String> tags;
@@ -182,7 +191,7 @@ class _TagScroller extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(width: 6),
           itemBuilder: (_, i) => _TagChip(label: tags[i]),
         ),
-        // 왼쪽 페이드
+        // 양쪽 페이드
         Positioned(
           left: 0,
           top: 0,
@@ -194,13 +203,12 @@ class _TagScroller extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  colors: [MColors.white, MColors.white.withOpacity(0.0)],
+                  colors: [MColors.white, MColors.white.withOpacity(0)],
                 ),
               ),
             ),
           ),
         ),
-        // 오른쪽 페이드
         Positioned(
           right: 0,
           top: 0,
@@ -212,7 +220,7 @@ class _TagScroller extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  colors: [MColors.white.withOpacity(0.0), MColors.white],
+                  colors: [MColors.white.withOpacity(0), MColors.white],
                 ),
               ),
             ),
