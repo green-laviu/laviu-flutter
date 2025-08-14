@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
-import 'package:laviu_flutter/ui/widgets/m_info.dart';
 import 'package:laviu_flutter/ui/widgets/m_live.dart';
 import 'package:laviu_flutter/ui/widgets/m_profile_row.dart';
+import 'package:laviu_flutter/ui/widgets/m_user_info.dart';
 
 class UserDetailBody extends StatelessWidget {
   const UserDetailBody({super.key});
@@ -94,7 +94,7 @@ class UserDetailBody extends StatelessWidget {
               // 라이브 영상 영역 (썸네일 + 제목 + 해시태그)
               MLive(),
               // 정보 영역
-              MInfo(),
+              MUserInfo(),
             ],
           ),
         ),

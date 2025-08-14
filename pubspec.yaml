@@ -44,7 +44,8 @@ dependencies:
   pull_to_refresh: ^2.0.0            # 리스트를 아래로 끌어당겨 새로고침(Pull to Refresh) 기능을 쉽게 구현 가능
   google_fonts: ^6.3.0               # 구글 폰트를 쉽게 적용할 수 있는 라이브러리 (TextStyle에 원하는 폰트 지정 가능)
   flutter_dotenv: ^5.2.1             # .env 파일의 환경변수(BASE_URL 등)를 Flutter 앱에서 불러오기 위한 패키지
-  flutter_svg: ^2.2.0
+  flutter_svg: ^2.2.0                # SVG(벡터) 이미지를 Flutter 위젯으로 렌더링할 수 있는 라이브러리 (해상도에 무관하게 선명하게 표시 가능)
+  animated_text_kit: ^4.2.3          # 다양한 텍스트 애니메이션 효과를 쉽게 적용할 수 있는 라이브러리 (타이핑, 페이드, 스케일 등)
 
 
 
@@ -78,8 +79,9 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/mock/search.json
-    - .env
     - assets/mock/home_feed.json
+    - assets/mock/following.json
+    - .env
 
   
   

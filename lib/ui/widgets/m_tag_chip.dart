@@ -3,9 +3,9 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
-class MyDetailTagChip extends StatelessWidget {
+class MTagChip extends StatelessWidget {
   final String label;
-  const MyDetailTagChip({required this.label});
+  const MTagChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class MyDetailTagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: MColors.transparent,
         border: Border.all(color: MColors.primaryStrong),
-        borderRadius: BorderRadius.circular(MSizes.radiusS),
+        borderRadius: BorderRadius.circular(MSizes.radiusM),
       ),
       child: Text(
         label,

@@ -6,6 +6,7 @@ class MColors {
   static const white = Colors.white;
   static const black = Colors.black;
   static const transparent = Colors.transparent;
+  static const red = Colors.red;
 
   // 핑크 테마 컬러
   static const primaryBackground = Color(0xFFF9DADA); // 배경 보조

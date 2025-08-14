@@ -1,0 +1,84 @@
+{
+    "followingChannels": [
+        {
+            "streamerId": 1004,
+            "streamerName": "다쥬",
+            "streamerProfileImageUrl": "https://example.com/profiles/1004.jpg",
+            "streamStatus": "LIVE"
+        },
+        {
+            "streamerId": 1005,
+            "streamerName": "루나",
+            "streamerProfileImageUrl": "https://example.com/profiles/1005.jpg",
+            "streamStatus": "ENDED"
+        },
+        {
+            "streamerId": 1006,
+            "streamerName": "엠버센",
+            "streamerProfileImageUrl": "https://example.com/profiles/1006.jpg",
+            "streamStatus": "LIVE"
+        },
+        {
+            "streamerId": 1007,
+            "streamerName": "게임좌",
+            "streamerProfileImageUrl": "https://example.com/profiles/1007.jpg",
+            "streamStatus": "ENDED"
+        },
+        {
+            "streamerId": 1008,
+            "streamerName": "스트리머1008",
+            "streamerProfileImageUrl": "https://example.com/profiles/1008.jpg",
+            "streamStatus": "LIVE"
+        }
+    ],
+    "followingLiveStreams": [
+        {
+            "streamId": 201,
+            "streamKey": "stream_201_ghi",
+            "streamerId": 1004,
+            "streamerName": "다쥬",
+            "streamerProfileImageUrl": "https://example.com/profiles/1004.jpg",
+            "title": "패밀리가 떴다 같이보기 (오늘 짧방)",
+            "viewerCount": 6370,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb4.jpg",
+            "hashtags": [
+                "talk",
+                "같이보기",
+                "패밀리가떴다"
+            ]
+        },
+        {
+            "streamId": 202,
+            "streamKey": "stream_202_jkl",
+            "streamerId": 1005,
+            "streamerName": "동그레",
+            "streamerProfileImageUrl": "https://example.com/profiles/1005.jpg",
+            "title": "2시 스타 두번째 수업 (w. 김정민 선생님)",
+            "viewerCount": 2438,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb5.jpg",
+            "hashtags": [
+                "스타크래프트 : 리마스터",
+                "동그레",
+                "인벤트"
+            ]
+        },
+        {
+            "streamId": 203,
+            "streamKey": "stream_203_mno",
+            "streamerId": 1006,
+            "streamerName": "엠버센",
+            "streamerProfileImageUrl": "https://example.com/profiles/1006.jpg",
+            "title": "10명모으는데 15분걸리는 게임",
+            "viewerCount": 2351,
+            "streamStatus": "LIVE",
+            "thumbnailUrl": "https://example.com/thumb6.jpg",
+            "hashtags": [
+                "리그 오브 레전드",
+                "엠버센",
+                "엠센"
+            ]
+        }
+    ]
+}
