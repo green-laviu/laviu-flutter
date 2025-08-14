@@ -256,7 +256,7 @@ class _HeaderSection extends StatelessWidget {
       children: [
         // 제목/칩/통계
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +275,7 @@ class _HeaderSection extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Text(
@@ -296,46 +296,75 @@ class _HeaderSection extends StatelessWidget {
         // 채널 카드
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Card(
-            margin: EdgeInsets.zero,
-            elevation: 0,
-            color: MColors.white,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              leading: _AvatarFallback(name: info.channelName),
-              title: Text(
-                info.channelName,
-                style: MText.label1SemiBold(color: MColors.textNeutral),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                '팔로워 ${_compact(info.channelFollowerCount)}',
-                style: MText.caption(color: MColors.textAlternative),
-              ),
-              trailing: TextButton(
-                onPressed: () {},
-                child: Text(
-                  info.channelIsFollowing ? '팔로잉' : '팔로우',
-                  style: MText.label2Medium(
-                    color: info.channelIsFollowing
-                        ? MColors.textAlternative
-                        : MColors.primaryStrong,
+          child: SizedBox(
+            height: 56, // compact
+            child: Row(
+              children: [
+                // 아바타 (작게)
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: MColors.lineNormal,
+                  child: Text(
+                    info.channelName.isEmpty
+                        ? '?'
+                        : String.fromCharCode(
+                            info.channelName.runes.first,
+                          ).toUpperCase(),
+                    style: MText.label2Medium(color: MColors.textNeutral),
                   ),
                 ),
-              ),
+                const SizedBox(width: 10),
+
+                // 채널명 + 팔로워
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        info.channelName,
+                        style: MText.label1SemiBold(color: MColors.textNeutral),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '팔로워 ${_compact(info.channelFollowerCount)}',
+                        style: MText.caption(color: MColors.textAlternative),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 팔로우 버튼 (미니)
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(0, 32),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  child: Text(
+                    info.channelIsFollowing ? '팔로잉' : '팔로우',
+                    style: MText.label2Medium(
+                      color: info.channelIsFollowing
+                          ? MColors.textAlternative
+                          : MColors.primaryStrong,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
 
-        const SizedBox(height: 8),
-        const Divider(height: 1),
+        Divider(
+          height: 0.5,
+          thickness: 0.5,
+          color: MColors.lineNormal.withOpacity(0.18),
+        ),
+        const SizedBox(height: 4),
       ],
     );
   }
@@ -475,6 +504,79 @@ class _TagStrip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChannelCompactRow extends StatelessWidget {
+  final _LiveMock info;
+  const _ChannelCompactRow({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: SizedBox(
+        height: 56, // ✅ 컴팩트 높이
+        child: Row(
+          children: [
+            // 아바타 더 작게
+            CircleAvatar(
+              radius: 16, // 20 -> 16
+              backgroundColor: MColors.lineNormal,
+              child: Text(
+                info.channelName.isEmpty
+                    ? '?'
+                    : String.fromCharCode(
+                        info.channelName.runes.first,
+                      ).toUpperCase(),
+                style: MText.label2Medium(color: MColors.textNeutral),
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // 이름 + 팔로워 (작게)
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    info.channelName,
+                    style: MText.label1SemiBold(color: MColors.textNeutral),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '팔로워 ${_compact(info.channelFollowerCount)}',
+                    style: MText.caption(color: MColors.textAlternative),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // 팔로우 버튼 (미니)
+            TextButton(
+              onPressed: () {},
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, 32), // ✅ 낮은 높이
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              child: Text(
+                info.channelIsFollowing ? '팔로잉' : '팔로우',
+                style: MText.label2Medium(
+                  color: info.channelIsFollowing
+                      ? MColors.textAlternative
+                      : MColors.primaryStrong,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
