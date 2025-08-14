@@ -1,9 +1,9 @@
+// live_watch_page.dart
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
 /// UI만 그리는 목 버전. 데이터/플레이어/소켓 없음.
-/// 참고: 기존 라우팅을 깨지 않기 위해 liveId는 받지만 사용하진 않음.
 class LiveWatchPage extends StatefulWidget {
   final String liveId;
   const LiveWatchPage({super.key, required this.liveId});
@@ -13,8 +13,9 @@ class LiveWatchPage extends StatefulWidget {
 }
 
 class _LiveWatchPageState extends State<LiveWatchPage> {
-  final _scrollCtrl = ScrollController();
+  final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
+  final _inputFocus = FocusNode();
 
   // ---- 목 데이터 ----
   late final _LiveMock info;
@@ -37,293 +38,148 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
       startedAt: DateTime.parse("2025-08-07T15:00:00Z"),
     );
 
-    // 초기 채팅 목
     messages.addAll(const [
       _UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
       _UiChat(user: "소고기국밥", text: "진짜 재밌다"),
     ]);
+
+    // 첫 렌더 후 맨 아래로
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    _inputFocus.addListener(() {
+      if (_inputFocus.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 80), _scrollToBottom);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _scrollCtrl.dispose();
+    _listCtrl.dispose();
     _inputCtrl.dispose();
+    _inputFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: MColors.backgroundNormal,
-      appBar: AppBar(
-        backgroundColor: MColors.backgroundNormal,
-        elevation: 0,
-        centerTitle: true,
-        title: Text('LAVIU', style: MText.heading2(color: MColors.textNormal)),
-        automaticallyImplyLeading: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            color: MColors.textNeutral,
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            color: MColors.textNeutral,
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 1) 플레이어 영역(그림만)
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              children: [
-                Container(color: Colors.black),
-                Positioned(
-                  left: 8,
-                  top: 8,
-                  child: Row(
-                    children: [
-                      _pill('LIVE', const Color(0xFFE53935)),
-                      const SizedBox(width: 6),
-                      _pill('실시간', Colors.black.withOpacity(0.6)),
-                    ],
-                  ),
-                ),
-                const Center(
-                  child: Icon(
-                    Icons.play_circle_outline,
-                    size: 64,
-                    color: Colors.white70,
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: LinearProgressIndicator(
-                    value: 0.6,
-                    backgroundColor: Colors.white10,
-                    color: MColors.primaryStrong,
-                    minHeight: 3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // 2) 메타/채널/채팅 리스트
-          Expanded(
-            child: CustomScrollView(
-              controller: _scrollCtrl,
-              slivers: [
-                // 제목/칩/통계
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      // AppBar 제거
+      body: SafeArea(
+        bottom: false, // 하단 입력은 따로 SafeArea로 감쌈
+        child: Column(
+          children: [
+            // 1) 플레이어 영역(그림만)
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                children: [
+                  Container(color: Colors.black),
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    child: Row(
                       children: [
-                        Text(
-                          info.title,
-                          style: MText.modal3Bold(color: MColors.textNeutral),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: -6,
-                          children:
-                              [
-                                ...info.badges,
-                                ...info.tags,
-                              ].map((t) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: MColors.lineNormal,
-                                    ),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    t,
-                                    style: MText.label2Regular(
-                                      color: MColors.textAlternative,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(
-                              '${_compact(info.viewerCount)}명 시청중',
-                              style: MText.caption(
-                                color: MColors.textAlternative,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              '스트리밍 중',
-                              style: MText.caption(
-                                color: MColors.textAlternative,
-                              ),
-                            ),
-                          ],
-                        ),
+                        _pill('LIVE', const Color(0xFFE53935)),
+                        const SizedBox(width: 6),
+                        _pill('실시간', Colors.black.withOpacity(0.6)),
                       ],
                     ),
                   ),
-                ),
-
-                // 채널 카드
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Card(
-                      elevation: 0,
-                      color: MColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: MColors.lineNormal),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        leading: _AvatarFallback(name: info.channelName),
-                        title: Text(
-                          info.channelName,
-                          style: MText.label1SemiBold(
-                            color: MColors.textNeutral,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '팔로워 ${_compact(info.channelFollowerCount)}',
-                          style: MText.caption(color: MColors.textAlternative),
-                        ),
-                        trailing: TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            info.channelIsFollowing ? '팔로잉' : '팔로우',
-                            style: MText.label2Medium(
-                              color: info.channelIsFollowing
-                                  ? MColors.textAlternative
-                                  : MColors.primaryStrong,
-                            ),
-                          ),
-                        ),
-                      ),
+                  const Center(
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      size: 64,
+                      color: Colors.white70,
                     ),
                   ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                const SliverToBoxAdapter(child: Divider(height: 1)),
-
-                // 채팅 리스트
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final m = messages[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 2,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '${m.user} ',
-                                    style: MText.label1Medium(
-                                      color: _nameColor(m.user),
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: m.text,
-                                    style: MText.caption(
-                                      color: MColors.textNeutral,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                          ],
-                        ),
-                      );
-                    },
-                    childCount: messages.length,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 12)),
-              ],
-            ),
-          ),
-
-          // 3) 하단 입력바
-          SafeArea(
-            top: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-              decoration: BoxDecoration(
-                color: MColors.white,
-                border: Border(top: BorderSide(color: MColors.lineNormal)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _inputCtrl,
-                      minLines: 1,
-                      maxLines: 3,
-                      style: MText.inputRegular(color: MColors.textNeutral),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        hintText: '채팅을 입력해주세요.',
-                        hintStyle: MText.label2Regular(
-                          color: MColors.textDisabled,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(22),
-                          borderSide: BorderSide(color: MColors.lineNormal),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(22),
-                          borderSide: BorderSide(
-                            color: MColors.primary.withOpacity(0.4),
-                          ),
-                        ),
-                      ),
-                      onSubmitted: (_) => _send(),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: LinearProgressIndicator(
+                      value: 0.6,
+                      backgroundColor: Colors.white10,
+                      color: MColors.primaryStrong,
+                      minHeight: 3,
                     ),
-                  ),
-                  IconButton(
-                    onPressed: _send,
-                    icon: const Icon(Icons.send_rounded),
-                    color: MColors.primaryStrong,
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // 2) 메타/채널/채팅 리스트 (reverse)
+            Expanded(
+              child: ListView.builder(
+                controller: _listCtrl,
+                padding: const EdgeInsets.only(top: 0, bottom: 8),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                itemCount: messages.length + 1, // 0번은 헤더
+                itemBuilder: (context, index) {
+                  if (index == 0)
+                    return _HeaderSection(info: info); // 플레이어 바로 아래
+                  final m = messages[index - 1]; // 채팅은 정상 순서
+                  return _ChatRow(m: m);
+                },
+              ),
+            ),
+
+            // 3) 하단 입력바 (키보드 가림 방지: SafeArea로 처리)
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                decoration: BoxDecoration(
+                  color: MColors.white,
+                  border: Border(top: BorderSide(color: MColors.lineNormal)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _inputCtrl,
+                        focusNode: _inputFocus,
+                        onTap: _scrollToBottom,
+                        minLines: 1,
+                        maxLines: 3,
+                        style: MText.inputRegular(color: MColors.textNeutral),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: '채팅을 입력해주세요.',
+                          hintStyle: MText.label2Regular(
+                            color: MColors.textDisabled,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: BorderSide(color: MColors.lineNormal),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: BorderSide(
+                              color: MColors.primary.withOpacity(0.4),
+                            ),
+                          ),
+                        ),
+                        onSubmitted: (_) => _send(),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _send,
+                      icon: const Icon(Icons.send_rounded),
+                      color: MColors.primaryStrong,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -331,19 +187,21 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
   void _send() {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
+
     setState(() {
       messages.add(_UiChat(user: '나', text: text));
     });
+
     _inputCtrl.clear();
     _scrollToBottom();
   }
 
   void _scrollToBottom() {
-    if (!_scrollCtrl.hasClients) return;
+    if (!_listCtrl.hasClients) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollCtrl.animateTo(
-        _scrollCtrl.position.maxScrollExtent + 80,
-        duration: const Duration(milliseconds: 200),
+      _listCtrl.animateTo(
+        _listCtrl.position.maxScrollExtent + 40,
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
       );
     });
@@ -388,6 +246,136 @@ class _UiChat {
 
 /* ---------------- 위젯/헬퍼 ---------------- */
 
+class _HeaderSection extends StatelessWidget {
+  final _LiveMock info;
+  const _HeaderSection({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // 제목/칩/통계
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                info.title,
+                style: MText.modal3Bold(color: MColors.textNeutral),
+              ),
+              const SizedBox(height: 8),
+              // (위) title, SizedBox(height: 8) 까지는 그대로 두고,
+              // 이 자리의 Wrap(...)을 교체:
+              _TagStrip(
+                items: [
+                  ...info.badges,
+                  ...info.tags,
+                ],
+              ),
+
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text(
+                    '${_compact(info.viewerCount)}명 시청중',
+                    style: MText.caption(color: MColors.textAlternative),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '스트리밍 중',
+                    style: MText.caption(color: MColors.textAlternative),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // 채널 카드
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Card(
+            margin: EdgeInsets.zero,
+            elevation: 0,
+            color: MColors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              leading: _AvatarFallback(name: info.channelName),
+              title: Text(
+                info.channelName,
+                style: MText.label1SemiBold(color: MColors.textNeutral),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                '팔로워 ${_compact(info.channelFollowerCount)}',
+                style: MText.caption(color: MColors.textAlternative),
+              ),
+              trailing: TextButton(
+                onPressed: () {},
+                child: Text(
+                  info.channelIsFollowing ? '팔로잉' : '팔로우',
+                  style: MText.label2Medium(
+                    color: info.channelIsFollowing
+                        ? MColors.textAlternative
+                        : MColors.primaryStrong,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+        const Divider(height: 1),
+      ],
+    );
+  }
+}
+
+class _ChatRow extends StatelessWidget {
+  final _UiChat m;
+  const _ChatRow({required this.m});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ), // 2 -> 6
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${m.user} ',
+                  style: MText.label1Medium(color: _nameColor(m.user)),
+                ),
+                TextSpan(
+                  text: m.text,
+                  style: MText.caption(color: MColors.textNeutral),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+}
+
 class _AvatarFallback extends StatelessWidget {
   final String name;
   const _AvatarFallback({required this.name});
@@ -396,7 +384,7 @@ class _AvatarFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final initials = name.isEmpty
         ? '?'
-        : String.fromCharCode(name.runes.first); // 한글도 안전하게 첫 글자
+        : String.fromCharCode(name.runes.first).toUpperCase(); // 대문자 처리
     return CircleAvatar(
       radius: 20,
       backgroundColor: MColors.lineNormal,
@@ -417,6 +405,79 @@ Widget _pill(String text, Color color) {
     ),
     child: Text(text, style: MText.label2Bold(color: Colors.white)),
   );
+}
+
+class _TagStrip extends StatelessWidget {
+  final List<String> items;
+  final double fadeWidth;
+  const _TagStrip({required this.items, this.fadeWidth = 24});
+
+  @override
+  Widget build(BuildContext context) {
+    // Chip 높이에 맞춰 살짝 여유를 둔 고정 높이
+    return SizedBox(
+      height: 34,
+      child: Stack(
+        children: [
+          // 가로 스크롤 되는 태그 줄 (한 줄)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.only(right: fadeWidth), // 페이드 아래로 살짝 패딩
+            child: Row(
+              children: [
+                const SizedBox(width: 2),
+                ...items.map(
+                  (t) => Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: MColors.lineNormal),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        t,
+                        style: MText.label2Regular(
+                          color: MColors.textAlternative,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+              ],
+            ),
+          ),
+
+          // 오른쪽 페이드(“살짝 넘어가는” 느낌)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                width: fadeWidth,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      MColors.white.withOpacity(0.0),
+                      MColors.white, // 배경색에 맞춰 자연스럽게
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 Color _nameColor(String name) {
