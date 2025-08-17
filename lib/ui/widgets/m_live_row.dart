@@ -57,7 +57,7 @@ class MLiveRow extends StatelessWidget {
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Image.network(
-                        item.thumbnailUrl,
+                        item.thumbnailUrl!,
                         fit: BoxFit.cover,
                         loadingBuilder: (c, w, p) => p == null
                             ? w
@@ -95,7 +95,7 @@ class MLiveRow extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _compact(item.viewerCount),
+                            _compact(item.viewerCount!),
                             style: MText.label2Bold(color: Colors.white),
                           ),
                         ],
@@ -126,7 +126,7 @@ class MLiveRow extends StatelessWidget {
                     children: [
                       ClipOval(
                         child: Image.network(
-                          item.streamerProfileImageUrl,
+                          item.streamerProfileImageUrl!,
                           width: 20,
                           height: 20,
                           fit: BoxFit.cover,
@@ -147,7 +147,7 @@ class MLiveRow extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          item.streamerName,
+                          item.streamerName!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: MText.caption(color: MColors.textAlternative),

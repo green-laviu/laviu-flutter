@@ -54,7 +54,7 @@ class HomeBannerCarousel extends StatelessWidget {
                           // 썸네일 (404 대비)
                           Positioned.fill(
                             child: Image.network(
-                              item.thumbnailUrl,
+                              item.thumbnailUrl!,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 color: MColors.lineNormal,
@@ -96,7 +96,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${_compact(item.viewerCount)}명',
+                                        '${_compact(item.viewerCount!)}명',
                                         style: MText.label2Bold(
                                           color: Colors.white,
                                         ),
@@ -151,7 +151,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                   children: [
                                     ClipOval(
                                       child: Image.network(
-                                        item.streamerProfileImageUrl,
+                                        item.streamerProfileImageUrl!,
                                         width: 18,
                                         height: 18,
                                         fit: BoxFit.cover,
@@ -165,7 +165,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        item.streamerName,
+                                        item.streamerName!,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
