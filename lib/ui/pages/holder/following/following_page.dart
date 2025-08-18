@@ -6,10 +6,7 @@ import 'package:laviu_flutter/data/model/following.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 import 'package:laviu_flutter/data/repository/following_providers.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_page.dart';
-<<<<<<< HEAD
 import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
-=======
->>>>>>> dev
 import 'package:laviu_flutter/ui/pages/search/search_page.dart';
 import 'package:laviu_flutter/ui/widgets/m_live_row.dart';
 
