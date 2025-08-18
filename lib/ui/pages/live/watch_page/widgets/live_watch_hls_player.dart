@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:laviu_flutter/_core/style/m_colors.dart';
+import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:video_player/video_player.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
@@ -16,7 +18,7 @@ class LiveWatchHlsPlayer extends StatefulWidget {
     super.key,
     required this.origin,
     required this.streamKey,
-    this.initialQuality = LiveQuality.auto,
+    this.initialQuality = LiveQuality.p1080,
     this.overrideMasterUrl, // ⬅️ 추가 (테스트용)
   });
 
@@ -27,7 +29,7 @@ class LiveWatchHlsPlayer extends StatefulWidget {
 class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
     with WidgetsBindingObserver {
   VideoPlayerController? _c;
-  LiveQuality _quality = LiveQuality.auto;
+  LiveQuality _quality = LiveQuality.p1080;
   bool _loading = false;
   String? _error;
   bool _show = true;
@@ -58,23 +60,13 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
   }
 
   String _buildUrl() {
-    if (widget.overrideMasterUrl != null) {
-      // 테스트 모드: 항상 마스터(Adaptive) 재생
-      return widget.overrideMasterUrl!;
-    }
-    if (_quality == LiveQuality.auto) {
-      return MHlsUrl.master(origin: widget.origin, streamKey: widget.streamKey);
-    }
-    final q = switch (_quality) {
-      LiveQuality.p1080 => '1080p',
-      LiveQuality.p720 => '720p',
-      LiveQuality.p480 => '480p',
-      LiveQuality.auto => '1080p', // not used
-    };
+    // 테스트용 공개 m3u8 강제 재생을 유지하려면 이 라인둬도 OK
+    if (widget.overrideMasterUrl != null) return widget.overrideMasterUrl!;
+
     return MHlsUrl.fixed(
       origin: widget.origin,
       streamKey: widget.streamKey,
-      quality: q,
+      quality: _quality.slug, // '1080p' | '720p' | '480p'
     );
   }
 
@@ -116,37 +108,105 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
     });
   }
 
-  Future<void> _pickQuality() async {
-    final q = await showModalBottomSheet<LiveQuality>(
+  Future<void> _showActionsSheet() async {
+    final label = _quality.label; // '1080p' ...
+    final isOriginal = _quality == LiveQuality.p1080;
+    final selected = await showModalBottomSheet<String>(
       context: context,
-      showDragHandle: true,
-      backgroundColor: Colors.black87,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final opt in LiveQuality.values)
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                title: Text(
-                  opt.label,
-                  style: MText.label1Medium(
-                    color: _quality == opt ? Colors.white : Colors.white70,
+                leading: const Icon(Icons.high_quality),
+                title: Text('해상도 $label'),
+                onTap: () => Navigator.pop(ctx, 'quality'),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.flag_outlined),
+                title: const Text('신고하기'),
+                onTap: () => Navigator.pop(ctx, 'report'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected == 'quality') {
+      await _showQualitySheet();
+    } else if (selected == 'report') {
+      // TODO: 신고 플로우
+    }
+  }
+
+  Future<void> _showQualitySheet() async {
+    final picked = await showModalBottomSheet<LiveQuality>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (ctx) {
+        Widget item(LiveQuality q, String title) {
+          final sel = _quality == q;
+          return ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: MColors.textNormal,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            trailing: sel ? Icon(Icons.check, color: MColors.textNormal) : null,
+            onTap: () => Navigator.pop(ctx, q),
+          );
+        }
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: MSizes.gapM,
+              bottom: MediaQuery.of(ctx).padding.bottom + MSizes.gapM,
+              left: MSizes.gapL,
+              right: MSizes.gapL,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 제목
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: MSizes.gapS),
+                  child: Text(
+                    '화질',
+                    style: MText.heading3Bold(color: MColors.textNormal),
                   ),
                 ),
-                trailing: _quality == opt
-                    ? const Icon(Icons.check, color: Colors.white)
-                    : null,
-                onTap: () => Navigator.of(ctx).pop(opt),
-              ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
+                // 항목 (체크는 현재 선택만)
+                item(LiveQuality.p1080, '고화질 (1080p)'),
+                item(LiveQuality.p720, '일반화질 (720p)'),
+                item(LiveQuality.p480, '저화질 (480p)'),
+              ],
+            ),
+          ),
+        );
+      },
     );
-    if (q != null && q != _quality) {
-      setState(() => _quality = q);
+
+    if (picked != null && picked != _quality) {
+      setState(() => _quality = picked);
       await _c?.pause();
-      await _init(); // URL 교체
+      await _init();
     }
   }
 
@@ -187,24 +247,16 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
               ),
             ),
 
-            // 상단 우측: 화질/새로고침
+            // 상단 우측 (기존 HD/Refresh Row 자리에 교체)
             Positioned(
               right: 8,
               top: 8 + MediaQuery.of(context).padding.top,
               child: _Faded(
                 visible: _show,
-                child: Row(
-                  children: [
-                    _miniBadge(_quality.label),
-                    IconButton(
-                      icon: const Icon(Icons.hd, color: Colors.white),
-                      onPressed: _pickQuality,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      onPressed: _init,
-                    ),
-                  ],
+                child: IconButton(
+                  icon: const Icon(Icons.more_horiz, color: Colors.white),
+                  onPressed: _showActionsSheet, // ⬅️ 아래 함수
+                  tooltip: '메뉴',
                 ),
               ),
             ),

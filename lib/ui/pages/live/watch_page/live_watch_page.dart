@@ -88,7 +88,7 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
             LiveWatchHlsPlayer(
               origin: _origin,
               streamKey: _streamKey,
-              initialQuality: LiveQuality.auto,
+              initialQuality: LiveQuality.p1080,
               overrideMasterUrl: _testUrl, // ⬅️ 여기에 공개 HLS
             ),
             // 2) 메타/채널/채팅 리스트 (reverse)
