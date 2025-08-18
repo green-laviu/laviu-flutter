@@ -1,12 +1,16 @@
+import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
+import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_icon_bar.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_info.dart';
 
-class LiveStreamBody extends StatelessWidget {
+class LiveStreamBody extends ConsumerWidget {
   const LiveStreamBody({
     super.key,
     required ScrollController scrollCtrl,
@@ -18,12 +22,43 @@ class LiveStreamBody extends StatelessWidget {
   final TextEditingController _msgCtrl;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    RtmpPublisherGVM gvm = ref.read(rtmpPublisherProvider.notifier);
+    RtmpPublisherModel pubModel = ref.watch(rtmpPublisherProvider);
+
+    final status = pubModel.status;
+    final isReady = status == PublisherStatus.previewing || status == PublisherStatus.live;
+    final isError = status == PublisherStatus.error;
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        // TODO: 카메라 프리뷰 자리
-        Container(color: MColors.primaryBackground),
+        // 카메라 프리뷰 자리
+        Positioned.fill(
+          child: isReady && gvm.controller != null
+              ? ApiVideoCameraPreview(
+                  controller: gvm.controller!,
+                  fit: BoxFit.cover,
+                )
+              : Container(
+                  color: MColors.black,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isError) ...[
+                        CircularProgressIndicator(),
+                        SizedBox(height: 12),
+                      ],
+                      Text(
+                        isError ? (pubModel.lastError ?? '카메라 준비 실패') : '카메라 준비 중...',
+                        style: const TextStyle(color: MColors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+        ),
 
         // 전체 오버레이 - 아이콘바 + 제목/해시태그 + 채팅 영역 (채팅 리스트 + 채팅 입력 바)
         SafeArea(

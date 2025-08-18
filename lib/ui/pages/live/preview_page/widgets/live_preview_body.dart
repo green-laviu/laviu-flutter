@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/data/gvm/live_stream_gvm.dart';
 import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_form.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_icon_bar.dart';
-import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
 import 'package:logger/logger.dart';
 
@@ -37,11 +37,12 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
 
   @override
   Widget build(BuildContext context) {
-    LiveStreamVM vm = ref.read(liveStreamProvider.notifier);
+    LiveStreamGVM vm = ref.read(liveStreamProvider.notifier);
     LivePreviewModel previewModel = ref.watch(livePreviewProvider);
 
     RtmpPublisherGVM gvm = ref.read(rtmpPublisherProvider.notifier);
     RtmpPublisherModel pubModel = ref.watch(rtmpPublisherProvider);
+
     final status = pubModel.status;
     final isReady = status == PublisherStatus.previewing || status == PublisherStatus.live;
     final isError = status == PublisherStatus.error;
@@ -49,8 +50,9 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
     return Stack(
       fit: StackFit.expand,
       children: [
+        // 카메라 프리뷰 자리
         Positioned.fill(
-          child: isReady
+          child: gvm.isPreviewVisible
               ? ApiVideoCameraPreview(
                   controller: gvm.controller!,
                   fit: BoxFit.cover,
@@ -101,6 +103,7 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
                     if (widget.formKey.currentState!.validate()) {
                       // 검증 통과 → 제출
                       Logger().d("제목 검증 통과");
+
                       vm.start(previewModel.title, previewModel.hashtagList);
                     }
                   },
@@ -110,26 +113,6 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Overlay extends StatelessWidget {
-  final String message;
-  const _Overlay({required this.message, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: Colors.white)),
-        ],
-      ),
     );
   }
 }

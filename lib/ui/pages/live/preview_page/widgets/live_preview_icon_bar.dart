@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
+import 'package:laviu_flutter/data/gvm/live_stream_gvm.dart';
 import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_setting_sheet.dart';
+import 'package:logger/logger.dart';
 
 class LivePreviewIconBar extends ConsumerWidget {
   const LivePreviewIconBar({
@@ -25,7 +29,27 @@ class LivePreviewIconBar extends ConsumerWidget {
           // 나가기 버튼
           IconButton(
             icon: Icon(Icons.close, color: MColors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              Logger().d('(1) 종료 버튼 클릭');
+
+              // 먼저 화면 닫기
+              if (context.mounted) {
+                Navigator.of(context, rootNavigator: true).pop();
+              }
+              Logger().d('(2) LivePreviewPage 닫기');
+
+              // 송출/프리뷰/컨트롤러 완전 종료 (반드시 대기)
+              Logger().d('(3) teardownPreview 요청');
+              unawaited(gvm.teardownPreview());
+
+              // RtmpPublisherGVM 수동 dispose
+              ref.invalidate(rtmpPublisherProvider);
+              Logger().d("(4) RtmpPublisherGVM 파괴됨");
+
+              // LiveStreamGVM 수동 dispose
+              ref.invalidate(liveStreamProvider);
+              Logger().d("(5) LiveStreamGVM 파괴됨");
+            },
           ),
           Row(
             children: [
