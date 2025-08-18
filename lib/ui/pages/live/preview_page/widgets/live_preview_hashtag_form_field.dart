@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_util.dart';
+import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 
-class LivePreviewHashtagFormField extends StatefulWidget {
+class LivePreviewHashtagFormField extends ConsumerStatefulWidget {
   const LivePreviewHashtagFormField({
     super.key,
   });
 
   @override
-  State<LivePreviewHashtagFormField> createState() => _LivePreviewHashtagFormFieldState();
+  ConsumerState<LivePreviewHashtagFormField> createState() =>
+      _LivePreviewHashtagFormFieldState();
 }
 
-class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormField> {
+class _LivePreviewHashtagFormFieldState
+    extends ConsumerState<LivePreviewHashtagFormField> {
   final _ctrl = TextEditingController();
   final _focus = FocusNode();
   final _scrollCtrl = ScrollController();
@@ -21,6 +25,8 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
   String? _errorMsg;
 
   void _addParsedHashtags(String tag) {
+    bool changed = false;
+
     List<String> parsedTagList = parseTagList(tag);
     for (final tag in parsedTagList) {
       if (_savedTagList.length >= 3) break;
@@ -35,16 +41,25 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
       setState(() {
         _savedTagList.add(normalizedTag);
         _errorMsg = null;
+        changed = true;
       });
+    }
+
+    if (changed) {
+      ref
+          .read(livePreviewProvider.notifier)
+          .hashtagList(List.of(_savedTagList));
     }
 
     // 해시태그 추가 후 스크롤을 맨 오른쪽으로 이동
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollCtrl.animateTo(
-        _scrollCtrl.position.maxScrollExtent,
-        duration: MSizes.animDurationFast,
-        curve: Curves.easeOut,
-      );
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: MSizes.animDurationFast,
+          curve: Curves.easeOut,
+        );
+      }
     });
 
     _ctrl.clear();
@@ -61,6 +76,8 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
 
   @override
   Widget build(BuildContext context) {
+    LivePreviewFM fm = ref.read(livePreviewProvider.notifier);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -135,22 +152,35 @@ class _LivePreviewHashtagFormFieldState extends State<LivePreviewHashtagFormFiel
               return Padding(
                 padding: EdgeInsets.only(right: MSizes.gapS),
                 child: Chip(
-                  label: Text('#$tag', style: MText.label2Regular(color: MColors.primaryStrong)),
+                  label: Text(
+                    '#$tag',
+                    style: MText.label2Regular(color: MColors.primaryStrong),
+                  ),
                   padding: EdgeInsets.zero,
                   backgroundColor: MColors.transparent,
                   labelPadding: EdgeInsets.only(left: MSizes.gapS, right: 0),
-                  visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // 위젯 크기에 맞춰 터치 영역 축소
+                  visualDensity: const VisualDensity(
+                    horizontal: -2,
+                    vertical: -2,
+                  ),
+                  materialTapTargetSize:
+                      MaterialTapTargetSize.shrinkWrap, // 위젯 크기에 맞춰 터치 영역 축소
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(MSizes.radiusM),
                     side: BorderSide(color: MColors.primaryStrong),
                   ),
-                  deleteIcon: Icon(Icons.close, size: MSizes.fontM, color: MColors.primaryStrong),
+                  deleteIcon: Icon(
+                    Icons.close,
+                    size: MSizes.fontM,
+                    color: MColors.primaryStrong,
+                  ),
                   onDeleted: () {
                     setState(() {
                       _savedTagList.remove(tag);
                       _errorMsg = null;
                     });
+
+                    fm.hashtagList(List.of(_savedTagList));
                   },
                 ),
               );
