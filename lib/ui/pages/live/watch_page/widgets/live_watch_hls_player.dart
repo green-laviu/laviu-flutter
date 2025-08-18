@@ -110,7 +110,6 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
 
   Future<void> _showActionsSheet() async {
     final label = _quality.label; // '1080p' ...
-    final isOriginal = _quality == LiveQuality.p1080;
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,

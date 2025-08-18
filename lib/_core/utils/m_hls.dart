@@ -1,4 +1,3 @@
-// lib/_core/utils/m_hls.dart
 class MHlsUrl {
   static String fixed({
     required String origin,
