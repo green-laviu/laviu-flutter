@@ -443,7 +443,7 @@ class _TagStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Chip 높이에 맞춰 살짝 여유를 둔 고정 높이
+    // Chip 높이에 맞춰 조금 여유를 둔 고정 높이
     return SizedBox(
       height: 34,
       child: Stack(
@@ -482,7 +482,7 @@ class _TagStrip extends StatelessWidget {
             ),
           ),
 
-          // 오른쪽 페이드(“살짝 넘어가는” 느낌)
+          // 오른쪽 페이드(살짝 넘어가는 느낌)
           Positioned(
             right: 0,
             top: 0,
@@ -496,7 +496,7 @@ class _TagStrip extends StatelessWidget {
                     end: Alignment.centerRight,
                     colors: [
                       MColors.white.withOpacity(0.0),
-                      MColors.white, // 배경색에 맞춰 자연스럽게
+                      MColors.white, // 배경색에 맞춰서 자연스럽게
                     ],
                   ),
                 ),
