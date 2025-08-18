@@ -7,9 +7,11 @@ import 'package:laviu_flutter/main.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_page.dart';
 import 'package:logger/logger.dart';
 
-final liveStreamProvider = NotifierProvider<LiveStreamGVM, LiveStreamModel?>(() {
-  return LiveStreamGVM();
-});
+final liveStreamProvider = NotifierProvider<LiveStreamGVM, LiveStreamModel?>(
+  () {
+    return LiveStreamGVM();
+  },
+);
 
 class LiveStreamGVM extends Notifier<LiveStreamModel?> {
   final mContext = navigatorKey.currentContext!;
@@ -20,7 +22,9 @@ class LiveStreamGVM extends Notifier<LiveStreamModel?> {
   }
 
   Future<void> start(String title, List<String> hashtagList) async {
-    Logger().d("(1) 생방송 시작 버튼 클릭: start() 호출됨 → title=$title, hashtagList=$hashtagList");
+    Logger().d(
+      "(1) 생방송 시작 버튼 클릭: start() 호출됨 → title=$title, hashtagList=$hashtagList",
+    );
 
     final data = {
       "title": title,
@@ -32,7 +36,9 @@ class LiveStreamGVM extends Notifier<LiveStreamModel?> {
     Logger().d("(3) Repository 응답 수신: $body");
 
     if (body["status"] != 200) {
-      Logger().e("(999) start 실패: status=${body["status"]}, msg=${body["msg"]}");
+      Logger().e(
+        "(999) start 실패: status=${body["status"]}, msg=${body["msg"]}",
+      );
       ScaffoldMessenger.of(mContext).showSnackBar(
         SnackBar(content: Text("생방송 시작하기 실패 : ${body["msg"]}")),
       );
@@ -43,10 +49,11 @@ class LiveStreamGVM extends Notifier<LiveStreamModel?> {
     state = LiveStreamModel.fromMap(body["data"]);
     Logger().d("(5) state 변경 완료: $state");
 
-    // TODO: rtmp 서버로 송출 요청
     final streamKey = state!.liveStream.streamKey;
     Logger().d("(6) startStreaming 호출 준비 → streamKey=$streamKey");
-    await ref.read(rtmpPublisherProvider.notifier).startStreaming(streamKey: streamKey);
+    await ref
+        .read(rtmpPublisherProvider.notifier)
+        .startStreaming(streamKey: streamKey);
 
     Logger().d("(7) start() 정상 완료");
 
@@ -61,7 +68,8 @@ class LiveStreamModel {
 
   LiveStreamModel(this.liveStream);
 
-  LiveStreamModel.fromMap(Map<String, dynamic> data) : liveStream = LiveStream.fromJson(data);
+  LiveStreamModel.fromMap(Map<String, dynamic> data)
+    : liveStream = LiveStream.fromJson(data);
 
   LiveStreamModel copyWith({
     LiveStream? liveStream,
@@ -71,6 +79,6 @@ class LiveStreamModel {
 
   @override
   String toString() {
-    return 'LiveStreamModel(post: $liveStream)';
+    return 'LiveStreamModel(liveStream: $liveStream)';
   }
 }

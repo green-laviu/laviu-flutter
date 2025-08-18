@@ -12,9 +12,10 @@ import 'package:laviu_flutter/data/model/params/rtmp_server_params.dart';
 import 'package:laviu_flutter/data/model/params/video_params.dart';
 import 'package:logger/logger.dart';
 
-final rtmpPublisherProvider = NotifierProvider<RtmpPublisherGVM, RtmpPublisherModel>(
-  () => RtmpPublisherGVM(),
-);
+final rtmpPublisherProvider =
+    NotifierProvider<RtmpPublisherGVM, RtmpPublisherModel>(
+      () => RtmpPublisherGVM(),
+    );
 
 class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   ApiVideoLiveStreamController? _streamCtrl;
@@ -24,14 +25,16 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   bool _streaming = false; // 방송 중인지 (실제 RTMP 송출 중 여부. 프리뷰 상태 표시 판단에 사용)
   bool _disposed = false; // 이 Notifier가 폐기(dispose)됐는지
   bool _opBusy = false; // 동시에 같은 작업이 겹치지 않게 하는 락
-  bool _tearingDown = false; // shutdown() 진행 중인지 (종료 중에는 init/preview 등 재호출을 차단)
+  bool _tearingDown =
+      false; // shutdown() 진행 중인지 (종료 중에는 init/preview 등 재호출을 차단)
 
   static Completer<void>? _teardownInFlight;
 
   // controller 외부에서 호출
   ApiVideoLiveStreamController? get controller => _streamCtrl;
 
-  bool get isPreviewVisible => _streamCtrl != null && _previewing && (_streamCtrl?.textureId != null);
+  bool get isPreviewVisible =>
+      _streamCtrl != null && _previewing && (_streamCtrl?.textureId != null);
 
   bool get isTearingDown => _tearingDown || _teardownInFlight != null;
 
@@ -79,7 +82,9 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     await _awaitTeardownIfAny();
 
     if (_disposed || _tearingDown) {
-      Logger().w('(-1) init 실행 무시(종료/정리 중): disposed=$_disposed tearingDown=$_tearingDown');
+      Logger().w(
+        '(-1) init 실행 무시(종료/정리 중): disposed=$_disposed tearingDown=$_tearingDown',
+      );
       return;
     }
     Logger().d(
@@ -122,6 +127,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
         Logger().d('(5) startPreview() 실행');
         await _streamCtrl!.startPreview(); // 카메라 프레임 표시 시작
         _previewing = true;
+        await Future.delayed(const Duration(milliseconds: 400)); // 안정화 대기
         Logger().d('(6) startPreview() 완료');
 
         if (_disposed) return;
@@ -148,7 +154,9 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     if (_tearingDown || _disposed) return;
 
     final rtmpBaseUrl = dotenv.env['RTMP_BASE_URL'];
-    Logger().d("(1) startStreaming 호출됨 streamKey=$streamKey rtmpBaseUrl=$rtmpBaseUrl");
+    Logger().d(
+      "(1) startStreaming 호출됨 streamKey=$streamKey rtmpBaseUrl=$rtmpBaseUrl",
+    );
     if (rtmpBaseUrl == null || rtmpBaseUrl.isEmpty || streamKey.isEmpty) {
       _onFailed("RTMP URL 또는 StreamKey가 비어있습니다.");
       Logger().e("(999) RTMP URL 또는 StreamKey 없음 → 실패");
@@ -171,7 +179,8 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
 
     // 이미 connecting/live이면 재호출을 무시해 중복 연결 시도를 차단.
-    if (state.status == PublisherStatus.live || state.status == PublisherStatus.connecting) {
+    if (state.status == PublisherStatus.live ||
+        state.status == PublisherStatus.connecting) {
       Logger().w("(999) 이미 ${state.status} 상태 → startStreaming 무시");
       return;
     }
@@ -206,7 +215,9 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     Logger().d("(7) status=connecting 상태로 변경");
 
     try {
-      Logger().d("(8) _streamCtrl.startStreaming 호출 (url=$rtmpBaseUrl, key=$finalKey)");
+      Logger().d(
+        "(8) _streamCtrl.startStreaming 호출 (url=$rtmpBaseUrl, key=$finalKey)",
+      );
       await _streamCtrl!.startStreaming(
         url: rtmpBaseUrl,
         streamKey: finalKey,
@@ -241,7 +252,9 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     Logger().d('(1) teardownPreview 시작');
     try {
       // 1) 스트리밍 중이면 우선 끊기
-      if (_streaming || state.status == PublisherStatus.live || state.status == PublisherStatus.connecting) {
+      if (_streaming ||
+          state.status == PublisherStatus.live ||
+          state.status == PublisherStatus.connecting) {
         try {
           await _streamCtrl?.stopStreaming();
         } catch (_) {}
@@ -285,7 +298,9 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   Future<void> _stopAndDispose() async {
     try {
       // 실행 중일 때만 stopStreaming 호출
-      if (_streaming || state.status == PublisherStatus.live || state.status == PublisherStatus.connecting) {
+      if (_streaming ||
+          state.status == PublisherStatus.live ||
+          state.status == PublisherStatus.connecting) {
         try {
           await _streamCtrl?.stopStreaming();
         } catch (_) {}
@@ -318,12 +333,16 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
 
   Future<void> toggleMute() async {
     if (_streamCtrl == null || !_initialized) {
-      Logger().w("(999) toggleMute 호출 → 무시됨 (controller==null or !initialized)");
+      Logger().w(
+        "(999) toggleMute 호출 → 무시됨 (controller==null or !initialized)",
+      );
       return;
     }
     final next = !state.isMuted;
     try {
-      Logger().d("(1) toggleMute 실행 → next=!state.isMuted=$next (현재 isMuted=${state.isMuted})");
+      Logger().d(
+        "(1) toggleMute 실행 → next=!state.isMuted=$next (현재 isMuted=${state.isMuted})",
+      );
       await _streamCtrl!.setIsMuted(next);
       if (_disposed) {
         Logger().w("(999) toggleMute 실행 도중 dispose됨");
@@ -339,11 +358,15 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
 
   Future<void> switchCamera() async {
     if (_streamCtrl == null || !_initialized) {
-      Logger().w("(999) switchCamera 호출 → 무시됨 (controller==null or !initialized)");
+      Logger().w(
+        "(999) switchCamera 호출 → 무시됨 (controller==null or !initialized)",
+      );
       return;
     }
     try {
-      Logger().d("(1) switchCamera 실행 (현재 isFrontCamera=${state.isFrontCamera})");
+      Logger().d(
+        "(1) switchCamera 실행 (현재 isFrontCamera=${state.isFrontCamera})",
+      );
       await _streamCtrl!.switchCamera();
       if (_disposed) {
         Logger().w("(999) switchCamera 실행 도중 dispose됨");
@@ -382,6 +405,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   void _onConnected() {
     _streaming = true;
     if (_disposed) return;
+    Logger().d("(1) _onConnected : RTMP 연결 성공 → 방송 상태를 LIVE로 전환합니다");
     state = state.copyWith(
       status: PublisherStatus.live,
       startedAt: DateTime.now(),
@@ -392,15 +416,24 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   void _onDisconnected() {
     _streaming = false;
     if (_disposed) return;
+    Logger().w(
+      "(1) _onDisconnected : RTMP 연결이 끊어졌습니다 → 상태를 ${_previewing ? "프리뷰" : "중지"}로 전환합니다",
+    );
     state = state.copyWith(
-      status: _previewing ? PublisherStatus.previewing : PublisherStatus.stopped,
+      status: _previewing
+          ? PublisherStatus.previewing
+          : PublisherStatus.stopped,
     );
   }
 
   void _onFailed(String msg) {
     _streaming = false;
     if (_disposed) return;
-    state = state.copyWith(status: PublisherStatus.error, lastError: msg);
+    Logger().e("(1) _onFailed : RTMP 연결 실패: $msg → 상태를 ERROR로 전환합니다");
+    state = state.copyWith(
+      status: PublisherStatus.error,
+      lastError: msg,
+    );
   }
 }
 
