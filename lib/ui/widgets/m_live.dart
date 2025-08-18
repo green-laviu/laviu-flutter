@@ -4,7 +4,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_badge.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/detail_page/widgets/my_detail_tag_chip.dart';
+import 'package:laviu_flutter/ui/widgets/m_tag_chip.dart';
 
 class MLive extends StatelessWidget {
   const MLive({
@@ -66,11 +66,11 @@ class MLive extends StatelessWidget {
           // 해시태그
           Row(
             children: [
-              MyDetailTagChip(label: '#토크'),
+              MTagChip(label: '#토크'),
               SizedBox(width: MSizes.gapS),
-              MyDetailTagChip(label: '#같이보기'),
+              MTagChip(label: '#같이보기'),
               SizedBox(width: MSizes.gapS),
-              MyDetailTagChip(label: '#패밀리가떴다'),
+              MTagChip(label: '#패밀리가떴다'),
             ],
           ),
         ],

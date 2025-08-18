@@ -3,8 +3,8 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
-class MInfo extends StatelessWidget {
-  const MInfo({
+class MUserInfo extends StatelessWidget {
+  const MUserInfo({
     super.key,
   });
 

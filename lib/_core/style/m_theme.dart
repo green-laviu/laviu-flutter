@@ -27,7 +27,7 @@ ThemeData mTheme() {
       thickness: MSizes.dividerThickness,
       color: MColors.lineNormal,
     ),
-    textTheme: GoogleFonts.notoSansTextTheme(),
+    textTheme: GoogleFonts.doHyeonTextTheme(),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: MColors.backgroundNormal,
       type: BottomNavigationBarType.fixed,
