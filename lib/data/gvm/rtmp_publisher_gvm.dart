@@ -8,11 +8,11 @@ import 'package:laviu_flutter/data/model/params/audio_params.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/data/model/params/rtmp_server_params.dart';
 import 'package:laviu_flutter/data/model/params/video_params.dart';
+import 'package:logger/logger.dart';
 
-final rtmpPublisherProvider =
-    NotifierProvider<RtmpPublisherGVM, RtmpPublisherModel>(
-      () => RtmpPublisherGVM(),
-    );
+final rtmpPublisherProvider = NotifierProvider<RtmpPublisherGVM, RtmpPublisherModel>(
+  () => RtmpPublisherGVM(),
+);
 
 class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   ApiVideoLiveStreamController? _streamCtrl;
@@ -23,6 +23,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   bool _disposed = false; // 이 Notifier가 폐기(dispose)됐는지
   bool _opBusy = false; // 동시에 같은 작업이 겹치지 않게 하는 락
 
+  // controller 외부에서 호출
   ApiVideoLiveStreamController? get controller => _streamCtrl;
 
   @override
@@ -49,11 +50,18 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
 
   // 초기화 + 프리뷰 시작
   Future<void> init({VideoConfig? vcfg, AudioConfig? acfg}) => _guard(() async {
+    Logger().d(
+      '(0) init() 실행: '
+      'initialized=$_initialized previewing=$_previewing streaming=$_streaming disposed=$_disposed',
+    );
+
     state = state.copyWith(
       videoConfig: vcfg ?? state.videoConfig,
       audioConfig: acfg ?? state.audioConfig,
       clearError: true,
     );
+
+    Logger().d('(1) state : $state');
 
     _streamCtrl ??= ApiVideoLiveStreamController(
       initialVideoConfig: state.videoConfig,
@@ -63,22 +71,31 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
       onDisconnection: _onDisconnected,
       onError: (e) => _onFailed("에러: $e"),
     );
+    Logger().d(
+      '(2) ApiVideoLiveStreamController 생성: '
+      '(video=${state.videoConfig} / audio=${state.audioConfig})',
+    );
 
     try {
       // 카메라/마이크 리소스 초기화
       if (!_initialized) {
+        Logger().d('(3) controller.initialize() 실행');
         await _streamCtrl!.initialize();
         _initialized = true;
+        Logger().d('(4) controller.initialize() 완료');
       }
 
       // 프리뷰가 아직 시작되지 않았다면 시작
       if (!_previewing) {
+        Logger().d('(5) startPreview() 실행');
         await _streamCtrl!.startPreview(); // 카메라 프레임 표시 시작
         _previewing = true;
+        Logger().d('(6) startPreview() 완료');
 
         if (_disposed) return;
         // 실제 RTMP 송출 중이 아니라면 상태를 previewing으로 갱신
         if (!_streaming) {
+          Logger().d('(7) status : previewing 상태 변경');
           state = state.copyWith(
             status: PublisherStatus.previewing,
             clearError: true,
@@ -86,6 +103,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
         }
       }
     } catch (e) {
+      Logger().e('(999) init() 실패: $e');
       _onFailed("카메라/마이크 초기화 또는 프리뷰 시작 실패: $e");
     }
   });
@@ -112,8 +130,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
 
     // 이미 connecting/live이면 재호출을 무시해 중복 연결 시도를 차단.
-    if (state.status == PublisherStatus.live ||
-        state.status == PublisherStatus.connecting) {
+    if (state.status == PublisherStatus.live || state.status == PublisherStatus.connecting) {
       return;
     }
 
@@ -178,25 +195,43 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   }
 
   Future<void> toggleMute() async {
-    if (_streamCtrl == null || !_initialized) return;
+    if (_streamCtrl == null || !_initialized) {
+      Logger().w("(999) toggleMute 호출 → 무시됨 (controller==null or !initialized)");
+      return;
+    }
     final next = !state.isMuted;
     try {
+      Logger().d("(1) toggleMute 실행 → next=!state.isMuted=$next (현재 isMuted=${state.isMuted})");
       await _streamCtrl!.setIsMuted(next);
-      if (_disposed) return;
+      if (_disposed) {
+        Logger().w("(999) toggleMute 실행 도중 dispose됨");
+        return;
+      }
       state = state.copyWith(isMuted: next);
+      Logger().d("(4) toggleMute 완료 → isMuted=$next");
     } catch (e) {
       _onFailed("음소거 전환 실패: $e");
+      Logger().e("(999) toggleMute 실패: $e");
     }
   }
 
   Future<void> switchCamera() async {
-    if (_streamCtrl == null || !_initialized) return;
+    if (_streamCtrl == null || !_initialized) {
+      Logger().w("(999) switchCamera 호출 → 무시됨 (controller==null or !initialized)");
+      return;
+    }
     try {
+      Logger().d("(1) switchCamera 실행 (현재 isFrontCamera=${state.isFrontCamera})");
       await _streamCtrl!.switchCamera();
-      if (_disposed) return;
+      if (_disposed) {
+        Logger().w("(999) switchCamera 실행 도중 dispose됨");
+        return;
+      }
       state = state.copyWith(isFrontCamera: !state.isFrontCamera);
+      Logger().d("(2) switchCamera 완료 → isFrontCamera=${!state.isFrontCamera}");
     } catch (e) {
       _onFailed("카메라 전환 실패: $e");
+      Logger().e("(999) switchCamera 실패: $e");
     }
   }
 
@@ -236,9 +271,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     _streaming = false;
     if (_disposed) return;
     state = state.copyWith(
-      status: _previewing
-          ? PublisherStatus.previewing
-          : PublisherStatus.stopped,
+      status: _previewing ? PublisherStatus.previewing : PublisherStatus.stopped,
     );
   }
 
