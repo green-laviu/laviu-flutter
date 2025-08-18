@@ -518,7 +518,7 @@ class _ChannelCompactRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: SizedBox(
-        height: 56, // ✅ 컴팩트 높이
+        height: 56, // 컴팩트 높이
         child: Row(
           children: [
             // 아바타 더 작게
@@ -563,7 +563,7 @@ class _ChannelCompactRow extends StatelessWidget {
             TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
-                minimumSize: const Size(0, 32), // ✅ 낮은 높이
+                minimumSize: const Size(0, 32), // 낮은 높이
                 padding: const EdgeInsets.symmetric(horizontal: 10),
               ),
               child: Text(
