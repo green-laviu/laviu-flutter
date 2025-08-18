@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
@@ -32,15 +30,15 @@ class LivePreviewIconBar extends ConsumerWidget {
             onPressed: () async {
               Logger().d('(1) 종료 버튼 클릭');
 
-              // 먼저 화면 닫기
+              // 송출/프리뷰/컨트롤러 완전 종료 (반드시 대기)
+              Logger().d('(2) teardownPreview 요청');
+              await gvm.teardownPreview();
+
+              // 화면 닫기 (정리 완료 후!)
               if (context.mounted) {
                 Navigator.of(context, rootNavigator: true).pop();
               }
-              Logger().d('(2) LivePreviewPage 닫기');
-
-              // 송출/프리뷰/컨트롤러 완전 종료 (반드시 대기)
-              Logger().d('(3) teardownPreview 요청');
-              unawaited(gvm.teardownPreview());
+              Logger().d('(3) LivePreviewPage 닫기');
 
               // RtmpPublisherGVM 수동 dispose
               ref.invalidate(rtmpPublisherProvider);

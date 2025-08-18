@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,10 +26,14 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
   bool _opBusy = false; // 동시에 같은 작업이 겹치지 않게 하는 락
   bool _tearingDown = false; // shutdown() 진행 중인지 (종료 중에는 init/preview 등 재호출을 차단)
 
+  static Completer<void>? _teardownInFlight;
+
   // controller 외부에서 호출
   ApiVideoLiveStreamController? get controller => _streamCtrl;
 
   bool get isPreviewVisible => _streamCtrl != null && _previewing && (_streamCtrl?.textureId != null);
+
+  bool get isTearingDown => _tearingDown || _teardownInFlight != null;
 
   @override
   RtmpPublisherModel build() {
@@ -45,8 +51,33 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
   }
 
+  // 1. 진행 중인 teardown이 있으면 끝날 때까지 반드시 대기
+  Future<void> _awaitTeardownIfAny() async {
+    final t = _teardownInFlight;
+    if (t != null) {
+      Logger().d('(0) 이전 teardown 대기 중...');
+      await t.future;
+      Logger().d('(0) 이전 teardown 완료');
+    }
+  }
+
+  // 2. 이번 호출이 teardown을 시작한다는 표식 세팅
+  void _beginTeardownIfNeeded() {
+    _teardownInFlight ??= Completer<void>();
+  }
+
+  // 3. teardown 완료 알림
+  void _finishTeardown() {
+    final t = _teardownInFlight;
+    if (t != null && !t.isCompleted) t.complete();
+    _teardownInFlight = null;
+  }
+
   // 초기화 + 프리뷰 시작
   Future<void> init({VideoConfig? vcfg, AudioConfig? acfg}) => _guard(() async {
+    // 이전 종료가 진행 중이면 여기서 반드시 대기
+    await _awaitTeardownIfAny();
+
     if (_disposed || _tearingDown) {
       Logger().w('(-1) init 실행 무시(종료/정리 중): disposed=$_disposed tearingDown=$_tearingDown');
       return;
@@ -124,6 +155,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
       return;
     }
 
+    await saveAccessToken("123"); // TODO : 토큰 추후 로그인 후 저장된 값 가져오도록 변경
     final token = await getAccessToken();
     Logger().d("(2) AccessToken 가져오기 시도 → token=$token");
     if (token == null || token.isEmpty) {
@@ -189,14 +221,34 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
 
   // 방송 송출 시작 X, 프리뷰화면에서 뒤로가기 시 자원 정리
   Future<void> teardownPreview() async {
+    // 이미 다른 곳에서 teardown 중이면 거기에 조인해서 "끝날 때까지 대기"하고 반환
+    if (_teardownInFlight != null) {
+      Logger().d('(0) teardown 이미 진행 중 → 조인 대기');
+      await _teardownInFlight!.future;
+      return;
+    }
+
     if (_opBusy) {
       Logger().w('(999) teardownPreview 무시됨 → 이미 실행 중');
       return;
     }
     _opBusy = true;
+
+    // 이번 호출이 teardown을 리드한다는 표식
+    _beginTeardownIfNeeded();
+    _tearingDown = true;
+
     Logger().d('(1) teardownPreview 시작');
     try {
-      // 상태를 먼저 내리지 말고, 네이티브 정리부터
+      // 1) 스트리밍 중이면 우선 끊기
+      if (_streaming || state.status == PublisherStatus.live || state.status == PublisherStatus.connecting) {
+        try {
+          await _streamCtrl?.stopStreaming();
+        } catch (_) {}
+        _streaming = false;
+      }
+
+      // 2) 프리뷰 정지
       if (_previewing) {
         Logger().d('(2) stopPreview 시도');
         try {
@@ -206,19 +258,26 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
         _previewing = false;
       }
 
+      // 3) 컨트롤러 dispose
       Logger().d('(4) dispose 시도');
       try {
         await _streamCtrl?.dispose();
       } catch (_) {}
       _streamCtrl = null;
 
-      _initialized = false;
-      _streaming = false;
+      // 4) 일부 단말 안정화를 위한 짧은 간극
+      await Future.delayed(const Duration(milliseconds: 200));
 
-      // 정말 필요하면 여기서만 상태 idle
+      _initialized = false;
+
+      // 5) 상태 반영
       state = state.copyWith(status: PublisherStatus.idle);
     } finally {
+      _tearingDown = false;
       _opBusy = false;
+
+      // 모든 대기자에게 "끝났다" 신호
+      _finishTeardown();
     }
   }
 

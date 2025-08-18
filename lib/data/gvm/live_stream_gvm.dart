@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 import 'package:laviu_flutter/data/repository/live_stream_repository.dart';
 import 'package:laviu_flutter/main.dart';
@@ -43,9 +44,9 @@ class LiveStreamGVM extends Notifier<LiveStreamModel?> {
     Logger().d("(5) state 변경 완료: $state");
 
     // TODO: rtmp 서버로 송출 요청
-    // final streamKey = state!.liveStream.streamKey;
-    // Logger().d("(6) startStreaming 호출 준비 → streamKey=$streamKey");
-    // await ref.read(rtmpPublisherProvider.notifier).startStreaming(streamKey: streamKey);
+    final streamKey = state!.liveStream.streamKey;
+    Logger().d("(6) startStreaming 호출 준비 → streamKey=$streamKey");
+    await ref.read(rtmpPublisherProvider.notifier).startStreaming(streamKey: streamKey);
 
     Logger().d("(7) start() 정상 완료");
 
