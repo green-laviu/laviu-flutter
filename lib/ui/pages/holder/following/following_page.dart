@@ -6,6 +6,7 @@ import 'package:laviu_flutter/data/model/following.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 import 'package:laviu_flutter/data/repository/following_providers.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_page.dart';
+import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
 import 'package:laviu_flutter/ui/pages/search/search_page.dart';
 import 'package:laviu_flutter/ui/widgets/m_live_row.dart';
 
@@ -188,6 +189,12 @@ class _LiveTab extends StatelessWidget {
         borderColor: MColors.lineNormal, // 홈과 동일한 카드 스타일
         onTap: () {
           // TODO: live_watch_page 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LiveWatchPage(liveId: lives.toString()),
+            ),
+          );
         },
       ),
     );
