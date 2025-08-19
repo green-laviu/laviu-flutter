@@ -30,12 +30,19 @@ class LiveStreamBody extends ConsumerWidget {
     final isReady = status == PublisherStatus.previewing || status == PublisherStatus.live;
     final isError = status == PublisherStatus.error;
 
+    final showPreview =
+        pubModel.status == PublisherStatus.previewing ||
+        pubModel.status == PublisherStatus.connecting ||
+        pubModel.status == PublisherStatus.live;
+
+    final hasTex = gvm.controller?.textureId != null && gvm.controller!.textureId! > 0;
+
     return Stack(
       fit: StackFit.expand,
       children: [
         // 카메라 프리뷰 자리
         Positioned.fill(
-          child: isReady && gvm.controller != null
+          child: (showPreview && hasTex)
               ? ApiVideoCameraPreview(
                   controller: gvm.controller!,
                   fit: BoxFit.cover,

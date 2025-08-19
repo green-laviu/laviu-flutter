@@ -37,6 +37,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
 
   @override
   RtmpPublisherModel build() {
+    ref.keepAlive();
     return RtmpPublisherModel.initial();
   }
 
@@ -140,6 +141,45 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
   });
 
+  bool get _hasValidTexture => (_streamCtrl?.textureId ?? 0) > 0;
+
+  bool get _previewAlive => _initialized && _previewing && _hasValidTexture;
+
+  /// 프리뷰가 죽어있으면 재시작하고, 인코더 워밍업을 잠깐 기다린다.
+  Future<void> _ensureWarmPreview() async {
+    if (_streamCtrl == null) {
+      await init();
+    }
+
+    // 프리뷰가 안 떠있으면 켠다
+    if (!_previewing) {
+      await _streamCtrl!.startPreview();
+      _previewing = true;
+    }
+
+    // --- 핵심: textureId > 0 될 때까지 기다린다 ---
+    final ok = await _waitUntil(
+      () => (_streamCtrl?.textureId ?? 0) > 0,
+      const Duration(seconds: 3),
+    );
+
+    Logger().d('ensureWarmPreview: ok=$ok tex=${_streamCtrl?.textureId}');
+
+    if (!ok) {
+      _onFailed('카메라 프리뷰 준비 실패 (textureId=0)');
+      throw StateError('preview texture is 0');
+    }
+  }
+
+  Future<bool> _waitUntil(bool Function() cond, Duration timeout) async {
+    final end = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(end)) {
+      if (cond()) return true;
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+    return cond();
+  }
+
   // 방송 시작 (연결 시도 -> 콜백으로 live 반영)
   Future<void> startStreaming({
     required String streamKey,
@@ -191,13 +231,23 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
 
     // finalKey = streamKey + token
-    final finalKey = "$streamKey?token=$token";
+    final finalKey = "$streamKey"; // TODO : 테스트 시에는 토큰 필요X 추후 ?token=$token 추가하기
     Logger().d("(6) 최종 StreamKey 생성: $finalKey");
 
     if (_disposed) {
       Logger().w("(999) 이미 disposed 상태 → startStreaming 중단");
       return;
     }
+
+    // 프리뷰 보장 + 워밍업 (여기가 핵심)
+    await _ensureWarmPreview();
+
+    // 확인용 로그 (문제 재현 시 진단에 매우 유용)
+    Logger().i(
+      'before connect: previewAlive=$_previewAlive '
+      'tex=${_streamCtrl?.textureId} '
+      'video=${state.videoConfig} audio=${state.audioConfig}',
+    );
 
     state = state.copyWith(
       status: PublisherStatus.connecting,
@@ -357,6 +407,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
   }
 
+  // 실행 중에 VideoConfig 변경
   Future<void> applyVideoConfig(VideoConfig cfg) async {
     if (_streamCtrl == null || !_initialized) return;
     try {
@@ -368,6 +419,7 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
   }
 
+  // 실행 중에 AudioConfig 변경
   Future<void> applyAudioConfig(AudioConfig cfg) async {
     if (_streamCtrl == null || !_initialized) return;
     try {
@@ -379,36 +431,63 @@ class RtmpPublisherGVM extends Notifier<RtmpPublisherModel> {
     }
   }
 
+  // RTMP 서버와 연결이 성공했을 때 호출되는 콜백
   void _onConnected() {
+    Logger().d('(1) _onConnected 호출됨');
     _streaming = true;
-    if (_disposed) return;
+    Logger().d('(2) _streaming = true');
+
+    if (_disposed) {
+      Logger().w('(999) 이미 disposed 상태 → 리턴');
+      return;
+    }
+
     state = state.copyWith(
       status: PublisherStatus.live,
       startedAt: DateTime.now(),
       clearError: true,
     );
+    Logger().d('(3) state 갱신됨 → status=live, startedAt=${state.startedAt}');
+    Logger().d('tex=${controller?.textureId}');
   }
 
+  // RTMP 연결이 끊어졌을 때 호출되는 콜백
   void _onDisconnected() {
+    Logger().d('(4) _onDisconnected 호출됨');
     _streaming = false;
-    if (_disposed) return;
-    state = state.copyWith(
-      status: _previewing ? PublisherStatus.previewing : PublisherStatus.stopped,
-    );
+    Logger().d('(5) _streaming = false');
+
+    if (_disposed) {
+      Logger().w('(999) 이미 disposed 상태 → 리턴');
+      return;
+    }
+
+    final newStatus = _previewing ? PublisherStatus.previewing : PublisherStatus.stopped;
+    state = state.copyWith(status: newStatus);
+    Logger().d('(6) state 갱신됨 → status=$newStatus');
   }
 
+  // RTMP 연결 실패나 오류 발생 시 호출되는 콜백
   void _onFailed(String msg) {
+    Logger().d('(7) _onFailed 호출됨');
     _streaming = false;
-    if (_disposed) return;
+    Logger().d('(8) _streaming = false');
+
+    if (_disposed) {
+      Logger().w('(999) 이미 disposed 상태 → 리턴');
+      return;
+    }
+
     state = state.copyWith(status: PublisherStatus.error, lastError: msg);
+    Logger().e('(9) state 갱신됨 → status=error, lastError=$msg');
   }
 }
 
 class RtmpPublisherModel {
   final PublisherStatus status;
   final String? lastError;
-  final VideoConfig videoConfig;
-  final AudioConfig audioConfig;
+  final VideoConfig videoConfig; // SDK 런타임 설정(= 실제로 인코더/컨트롤러가 쓰는 값)
+  final AudioConfig audioConfig; // SDK 런타임 설정(= 실제로 인코더/컨트롤러가 쓰는 값)
   final bool isMuted;
   final bool isFrontCamera;
   final DateTime? startedAt;
@@ -459,12 +538,35 @@ class RtmpPublisherModel {
 
   factory RtmpPublisherModel.initial() => RtmpPublisherModel(
     status: PublisherStatus.idle,
-    videoConfig: VideoConfig.withDefaultBitrate(),
-    audioConfig: AudioConfig(),
-    settings: PublisherSettings.default720_30(),
+    // 비디오: 480p, 30fps (라이브러리의 480p 기본 비트레이트 사용)
+    videoConfig: VideoConfig.withDefaultBitrate(
+      resolution: Resolution.RESOLUTION_480,
+      fps: 30,
+    ),
+    // 오디오: mono 96kbps, 44.1kHz
+    audioConfig: AudioConfig(
+      bitrate: 96_000,
+      channel: Channel.mono,
+      sampleRate: SampleRate.kHz_44_1,
+      enableEchoCanceler: true,
+      enableNoiseSuppressor: true,
+    ),
+    // settings : 표시/옵션용
+    settings: PublisherSettings(
+      video: VideoParams(
+        preset: QualityPreset.p480,
+        fps: FpsPreset.fps30,
+        bitrate: 1_000_000,
+      ),
+      audio: const AudioParams(
+        bitrate: 96_000,
+      ),
+    ),
   );
 }
 
+// 사용자 관점의 설정 값 모음
+// TODO : UI에서 settings 변경 시 반드시 컨트롤러에도 반영 (매핑+적용) 지금은 적용 안되는, 표시용
 class PublisherSettings {
   final VideoParams video;
   final AudioParams audio;
