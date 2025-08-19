@@ -2,12 +2,8 @@ import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
-import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
-import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
-import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
-import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_info.dart';
 
 class LiveStreamBody extends ConsumerWidget {
   const LiveStreamBody({
@@ -75,27 +71,27 @@ class LiveStreamBody extends ConsumerWidget {
               //LiveStreamIconBar(),
 
               // 제목/해시태그
-              LiveStreamInfo(),
+              //LiveStreamInfo(),
 
               // 채팅 영역 (채팅 리스트 + 채팅 입력 바)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: MSizes.gapXXL),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // 채팅 리스트
-                      SizedBox(
-                        height: 300,
-                        child: LiveStreamChatList(scrollCtrl: _scrollCtrl),
-                      ),
-                      SizedBox(height: MSizes.gapM),
-                      // 채팅 입력 바
-                      LiveStreamChatInputBar(msgCtrl: _msgCtrl),
-                    ],
-                  ),
-                ),
-              ),
+              // Expanded(
+              //   child: Padding(
+              //     padding: EdgeInsets.symmetric(horizontal: MSizes.gapXXL),
+              //     child: Column(
+              //       mainAxisAlignment: MainAxisAlignment.end,
+              //       children: [
+              //         // 채팅 리스트
+              //         SizedBox(
+              //           height: 300,
+              //           child: LiveStreamChatList(scrollCtrl: _scrollCtrl),
+              //         ),
+              //         SizedBox(height: MSizes.gapM),
+              //         // 채팅 입력 바
+              //         LiveStreamChatInputBar(msgCtrl: _msgCtrl),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
