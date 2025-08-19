@@ -340,14 +340,3 @@ Widget _pill(String text, Color color) => Container(
   ),
   child: Text(text, style: MText.label2Bold(color: Colors.white)),
 );
-
-Widget _miniBadge(String text) => Container(
-  margin: const EdgeInsets.only(right: 8),
-  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  decoration: BoxDecoration(
-    color: Colors.black.withOpacity(0.5),
-    borderRadius: BorderRadius.circular(999),
-    border: Border.all(color: Colors.white24),
-  ),
-  child: Text(text, style: MText.label2Medium(color: Colors.white)),
-);
