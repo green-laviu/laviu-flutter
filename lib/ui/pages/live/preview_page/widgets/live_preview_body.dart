@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:laviu_flutter/data/gvm/live_stream_gvm.dart';
 import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_form.dart';
-import 'package:laviu_flutter/ui/pages/live/preview_page/widgets/live_preview_icon_bar.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
 import 'package:logger/logger.dart';
 
@@ -37,7 +36,7 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
 
   @override
   Widget build(BuildContext context) {
-    LiveStreamGVM vm = ref.read(liveStreamProvider.notifier);
+    LiveStreamVM vm = ref.read(liveStreamProvider.notifier);
     LivePreviewModel previewModel = ref.watch(livePreviewProvider);
 
     RtmpPublisherGVM gvm = ref.read(rtmpPublisherProvider.notifier);
@@ -82,7 +81,7 @@ class _LivePreviewBodyState extends ConsumerState<LivePreviewBody> {
           child: Column(
             children: [
               // 상단 아이콘바
-              LivePreviewIconBar(),
+              //LivePreviewIconBar(),
 
               // 제목 + 해시태그
               LivePreviewForm(formKey: widget.formKey),

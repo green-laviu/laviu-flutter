@@ -7,7 +7,6 @@ import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
 import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
-import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_icon_bar.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_info.dart';
 
 class LiveStreamBody extends ConsumerWidget {
@@ -73,7 +72,7 @@ class LiveStreamBody extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 상단 아이콘바
-              LiveStreamIconBar(),
+              //LiveStreamIconBar(),
 
               // 제목/해시태그
               LiveStreamInfo(),

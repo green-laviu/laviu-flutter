@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:laviu_flutter/data/gvm/live_stream_gvm.dart';
-import 'package:laviu_flutter/data/gvm/rtmp_publisher_gvm.dart';
-import 'package:laviu_flutter/data/model/params/publisher_status.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_setting_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
-import 'package:logger/logger.dart';
 
 class LiveStreamIconBar extends ConsumerWidget {
   const LiveStreamIconBar({
     super.key,
+    required this.onStop,
+    this.onToggleMute,
+    this.onSwitchCamera,
+    this.isMuted = false,
+    this.isFrontCamera = true,
   });
+
+  final VoidCallback onStop;
+  final VoidCallback? onToggleMute; // null이면 자동 비활성화
+  final VoidCallback? onSwitchCamera; // null이면 자동 비활성화
+  final bool isMuted;
+  final bool isFrontCamera;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    RtmpPublisherGVM gvm = ref.read(rtmpPublisherProvider.notifier);
-    RtmpPublisherModel pubModel = ref.watch(rtmpPublisherProvider);
-
-    final isReady = (pubModel.status == PublisherStatus.previewing || pubModel.status == PublisherStatus.live);
-
-    final timeText = pubModel.startedAt != null ? DateFormat.Hms().format(pubModel.startedAt!) : "--:--:--";
+    // final timeText = pubModel.startedAt != null ? DateFormat.Hms().format(pubModel.startedAt!) : "--:--:--";
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: MSizes.gapM, vertical: MSizes.gapM),
@@ -39,7 +40,7 @@ class LiveStreamIconBar extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(MSizes.radiusCircle),
               ),
               child: Text(
-                timeText,
+                '--:--:--',
                 style: TextStyle(color: MColors.white, fontWeight: FontWeight.w900, fontSize: MSizes.fontNormal),
               ),
             ),
@@ -48,9 +49,9 @@ class LiveStreamIconBar extends ConsumerWidget {
             children: [
               // 마이크 설정 버튼
               IconButton(
-                tooltip: pubModel.isMuted ? '마이크 켜기' : '마이크 끄기',
-                icon: Icon(pubModel.isMuted ? Icons.mic_off : Icons.mic, color: MColors.white),
-                onPressed: isReady ? () => gvm.toggleMute() : null, // 준비 안되면 비활성화
+                tooltip: isMuted ? '마이크 켜기' : '마이크 끄기',
+                icon: Icon(isMuted ? Icons.mic_off : Icons.mic, color: MColors.white),
+                onPressed: onToggleMute,
                 padding: EdgeInsets.zero,
                 visualDensity: VisualDensity(horizontal: -2, vertical: -2),
                 iconSize: 24,
@@ -65,9 +66,9 @@ class LiveStreamIconBar extends ConsumerWidget {
               ),
               // 카메라 전/후면 전환 버튼
               IconButton(
-                tooltip: pubModel.isFrontCamera ? '후면으로 전환' : '전면으로 전환',
+                tooltip: isFrontCamera ? '후면으로 전환' : '전면으로 전환',
                 icon: Icon(Icons.flip_camera_ios, color: MColors.white),
-                onPressed: isReady ? () => gvm.switchCamera() : null, // 준비 안되면 비활성화
+                onPressed: onSwitchCamera,
                 padding: EdgeInsets.zero,
                 visualDensity: VisualDensity(horizontal: -2, vertical: -2),
                 iconSize: 24,
@@ -118,26 +119,7 @@ class LiveStreamIconBar extends ConsumerWidget {
                           title: '방송을 종료하시겠어요?',
                           message: '지금 방송을 종료하면 저장되지 않아요. 정말 종료하시겠어요?',
                           primaryText: '확인',
-                          onPrimaryTap: () async {
-                            Logger().d('(1) 종료 버튼 클릭');
-                            // 송출/프리뷰/컨트롤러 완전 종료 (반드시 대기)
-                            await gvm.shutdown();
-                            Logger().i('(2) shutdown 완료');
-
-                            // RtmpPublisherGVM 수동 dispose
-                            ref.invalidate(rtmpPublisherProvider);
-                            Logger().d("RtmpPublisherGVM 파괴됨");
-
-                            // LiveStreamGVM 수동 dispose
-                            ref.invalidate(liveStreamProvider);
-                            Logger().d("LiveStreamGVM 파괴됨");
-
-                            // 비동기 처리 뒤에 실행되므로 mounted 체크
-                            if (context.mounted) {
-                              Navigator.pop(context); // MDialog 닫기
-                              Navigator.pop(context); // LiveStreamPage 닫기
-                            }
-                          },
+                          onPrimaryTap: onStop,
                         );
                       },
                     );

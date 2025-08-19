@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:laviu_flutter/data/gvm/live_stream_gvm.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
 import 'package:laviu_flutter/ui/widgets/m_tag_chip.dart';
 
 class LiveStreamInfo extends ConsumerWidget {
