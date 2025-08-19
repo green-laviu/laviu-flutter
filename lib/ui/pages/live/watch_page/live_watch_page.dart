@@ -2,8 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/data/repository/chat_providers.dart';
+import 'package:laviu_flutter/data/repository/chat_repository.dart';
+import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_vm.dart';
 import 'widgets/live_watch_hls_player.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'widgets/live_watch_header.dart';
 part 'widgets/live_watch_chat_row.dart';
@@ -14,31 +18,35 @@ const _testUrl =
 // const _testUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8';
 // const _testUrl = 'https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8';
 
-/// UI만 그리는 목 버전. 데이터/플레이어/소켓 없음.
-class LiveWatchPage extends StatefulWidget {
+class LiveWatchPage extends ConsumerStatefulWidget {
   final String liveId;
   const LiveWatchPage({super.key, required this.liveId});
 
   @override
-  State<LiveWatchPage> createState() => _LiveWatchPageState();
+  ConsumerState<LiveWatchPage> createState() => _LiveWatchPageState();
 }
 
-class _LiveWatchPageState extends State<LiveWatchPage> {
+class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   // origin/streamKey는 실제 진입 시 주입하거나, 라우트 args/리포지토리에서 가져와도 OK
   final String _origin = 'http://host:port';
   late final String _streamKey;
   final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
   final _inputFocus = FocusNode();
+  final String _wsUrl = 'ws://host:8080/ws'; // TODO: 실제 주소로 교체
+  final String _jwt = 'Bearer <YOUR_JWT>'; // TODO: 세션/GVM에서 끌어오세요
+
+  (String, String, String) get _args => (_wsUrl, _jwt, _streamKey);
 
   // ---- 목 데이터 ----
   late final LiveMock info;
-  final List<UiChat> messages = [];
+  // final List<UiChat> messages = [];  // 실 데이터는 provider에서 옴
 
   @override
   void initState() {
     super.initState();
     _streamKey = widget.liveId;
+
     info = LiveMock(
       id: "live_20250807_01",
       title: "패밀리가 떴다 같이보기 (오늘 짬방)",
@@ -53,12 +61,11 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
       startedAt: DateTime.parse("2025-08-07T15:00:00Z"),
     );
 
-    messages.addAll(const [
-      UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
-      UiChat(user: "소고기국밥", text: "진짜 재밌다"),
-    ]);
+    // messages.addAll(const [
+    //   UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
+    //   UiChat(user: "소고기국밥", text: "진짜 재밌다"),
+    // ]);
 
-    // 첫 렌더 후 맨 아래로
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     _inputFocus.addListener(() {
       if (_inputFocus.hasFocus) {
@@ -77,37 +84,51 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(chatMessagesProvider(_args));
+    final connState = ref.watch(chatConnStateProvider(_args));
+
+    // 새 메시지 올 때마다 바닥 고정 (과하지 않게 한 번씩만)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: MColors.backgroundNormal,
-      // AppBar 제거
       body: SafeArea(
-        bottom: false, // 하단 입력은 따로 SafeArea로 감쌈
+        bottom: false,
         child: Column(
           children: [
             LiveWatchHlsPlayer(
               origin: _origin,
               streamKey: _streamKey,
               initialQuality: LiveQuality.p1080,
-              overrideMasterUrl: _testUrl, // ⬅️ 여기에 공개 HLS
+              overrideMasterUrl: _testUrl,
             ),
-            // 2) 메타/채널/채팅 리스트 (reverse)
             Expanded(
-              child: ListView.builder(
-                controller: _listCtrl,
-                padding: const EdgeInsets.only(top: 0, bottom: 8),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                itemCount: messages.length + 1, // 0번은 헤더
-                itemBuilder: (context, index) {
-                  if (index == 0) return LiveWatchHeader(info: info);
-                  final m = messages[index - 1];
-                  return LiveWatchChatRow(m: m);
-                },
-              ),
-            ),
+              child: chatState.loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      controller: _listCtrl,
+                      padding: const EdgeInsets.only(top: 0, bottom: 8),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount: (chatState.items.length) + 1, // 0 = 헤더
+                      itemBuilder: (context, index) {
+                        if (index == 0) return LiveWatchHeader(info: info);
 
-            // 3) 하단 입력바 (키보드 가림 방지: SafeArea로 처리)
+                        // 최신을 아래로 보이게 하려면 reversed 사용
+                        final items = chatState.items.reversed.toList();
+                        final m = items[index - 1];
+
+                        // ChatMessage -> UiChat 어댑트
+                        final ui = UiChat(
+                          user:
+                              m.authorNickname + (m.isStreamer ? ' (방송인)' : ''),
+                          text: m.content,
+                        );
+                        return LiveWatchChatRow(m: ui);
+                      },
+                    ),
+            ),
             SafeArea(
               top: false,
               child: Container(
@@ -128,7 +149,10 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
                         style: MText.inputRegular(color: MColors.textNeutral),
                         decoration: InputDecoration(
                           isDense: true,
-                          hintText: '채팅을 입력해주세요.',
+                          hintText:
+                              (connState.valueOrNull == ChatConnState.connected)
+                              ? '채팅을 입력해주세요.'
+                              : '연결 중…',
                           hintStyle: MText.label2Regular(
                             color: MColors.textDisabled,
                           ),
@@ -147,11 +171,16 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
                             ),
                           ),
                         ),
+                        enabled:
+                            (connState.valueOrNull == ChatConnState.connected),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
                     IconButton(
-                      onPressed: _send,
+                      onPressed:
+                          (connState.valueOrNull == ChatConnState.connected)
+                          ? _send
+                          : null,
                       icon: const Icon(Icons.send_rounded),
                       color: MColors.primaryStrong,
                     ),
@@ -169,9 +198,7 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      messages.add(UiChat(user: '나', text: text));
-    });
+    ref.read(chatMessagesProvider(_args).notifier).send(text);
 
     _inputCtrl.clear();
     _scrollToBottom();
