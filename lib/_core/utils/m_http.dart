@@ -10,8 +10,8 @@ final dio = Dio(
     baseUrl: baseUrl,
     contentType: "application/json; charset=utf-8",
     validateStatus: (status) => true,
-    // headers: {
-    //   "Authorization": "Bearer $accessToken",
-    // },
+    headers: {
+      "Authorization": "Bearer $accessToken",
+    },
   ),
 );
