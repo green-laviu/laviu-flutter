@@ -88,28 +88,15 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
       throw Exception("LiveStreamModel 없음: start() 먼저 호출 필요"); // -> 전역 에러 핸들러로
     }
 
-    // 토큰 불러오기
-    // final accessToken = await getAccessToken();
-    // if (accessToken == null) {
-    //   throw Exception("액세스 토큰 없음");
-    // }
-    final accessToken =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsYXZpdSIsInJvbGVzIjoiVVNFUiIsIm5pY2tuYW1lIjoidGVzdFN0cmVhbWVyIiwiaWQiOjUsImV4cCI6MTc1NjI2NjEzMywiZW1haWwiOiJ0ZXN0U3RyZWFtZXJAbmF0ZS5jb20ifQ.Buvlkcat0_GSYQunSuAYpoO94Rf5IOyZj1sLrYKKTox_iwaDLWzLYZp1nowvV8m2_W_FT7QCmWgtvHdltcIlkw";
-
     // 최종 streamKey 구성
-    final finalKey = "${model.liveStream.streamKey}?token=$accessToken";
-    Logger().d("finalKey : $finalKey");
+    final streamKey = "${model.liveStream.streamKey}";
+    Logger().d("streamKey : $streamKey");
 
     // 송출 시작
     await _streamCtrl.startStreaming(
       url: params.rtmpUrl,
-      streamKey: finalKey,
+      streamKey: model.liveStream.streamKey,
     );
-
-    // await _streamCtrl.startStreaming(
-    //   url: params.rtmpUrl,
-    //   streamKey: model.liveStream.streamKey,
-    // );
   }
 
   Future<void> stopStreaming() async => _streamCtrl.stopStreaming();
