@@ -1,7 +1,6 @@
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:laviu_flutter/_core/utils/m_device.dart';
 import 'package:laviu_flutter/data/model/params/params.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
@@ -89,23 +88,26 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
     }
 
     // 토큰 불러오기
-    final accessToken = await getAccessToken();
-    if (accessToken == null) {
-      throw Exception("액세스 토큰 없음");
-    }
-
-    // 최종 streamKey 구성
-    final finalKey = "${model.liveStream.streamKey}?token=$accessToken";
-
-    // 송출 시작
-    await _streamCtrl.startStreaming(
-      url: params.rtmpUrl,
-      streamKey: finalKey,
-    );
+    // final accessToken = await getAccessToken();
+    // if (accessToken == null) {
+    //   throw Exception("액세스 토큰 없음");
+    // }
+    // final accessToken =
+    //     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsYXZpdSIsInJvbGVzIjoiVVNFUiIsIm5pY2tuYW1lIjoidGVzdFN0cmVhbWVyIiwiaWQiOjUsImV4cCI6MTc1NjI2NjEzMywiZW1haWwiOiJ0ZXN0U3RyZWFtZXJAbmF0ZS5jb20ifQ.Buvlkcat0_GSYQunSuAYpoO94Rf5IOyZj1sLrYKKTox_iwaDLWzLYZp1nowvV8m2_W_FT7QCmWgtvHdltcIlkw";
+    //
+    // // 최종 streamKey 구성
+    // final finalKey = "${model.liveStream.streamKey}?token=$accessToken";
+    // Logger().d("finalKey : $finalKey");
+    //
+    // // 송출 시작
     // await _streamCtrl.startStreaming(
     //   url: params.rtmpUrl,
-    //   streamKey: model.liveStream.streamKey,
+    //   streamKey: finalKey,
     // );
+    await _streamCtrl.startStreaming(
+      url: params.rtmpUrl,
+      streamKey: model.liveStream.streamKey,
+    );
   }
 
   Future<void> stopStreaming() async => _streamCtrl.stopStreaming();
