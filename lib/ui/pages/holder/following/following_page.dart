@@ -5,7 +5,7 @@ import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/following.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 import 'package:laviu_flutter/data/repository/following_providers.dart';
-import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_page.dart';
+import 'package:laviu_flutter/ui/pages/live/streaming_page/live_streaming_page.dart';
 import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
 import 'package:laviu_flutter/ui/pages/search/search_page.dart';
 import 'package:laviu_flutter/ui/widgets/m_live_row.dart';
@@ -62,7 +62,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const LivePreviewPage()),
+                  MaterialPageRoute(builder: (_) => LiveStreamingPage()),
                 );
               },
             ),
@@ -230,8 +230,7 @@ class _ChannelRow extends StatelessWidget {
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Container(width: 44, height: 44, color: MColors.lineNormal),
+                errorBuilder: (_, __, ___) => Container(width: 44, height: 44, color: MColors.lineNormal),
               ),
             ),
           ),
