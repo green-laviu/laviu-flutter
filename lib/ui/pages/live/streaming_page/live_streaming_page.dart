@@ -6,6 +6,7 @@ import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
 import 'package:laviu_flutter/ui/pages/live/streaming_page/widgets/live_streaming_preview_overlay.dart';
 import 'package:laviu_flutter/ui/pages/live/streaming_page/widgets/live_streaming_stream_overlay.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class LiveStreamingPage extends ConsumerStatefulWidget {
   const LiveStreamingPage({super.key});
@@ -31,6 +32,8 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    WakelockPlus.enable(); // 화면 꺼짐 방지
 
     _streamCtrl = ApiVideoLiveStreamController(
       initialVideoConfig: params.videoConfig,
@@ -69,6 +72,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
 
   @override
   void dispose() {
+    WakelockPlus.disable();
     WidgetsBinding.instance.removeObserver(this);
     _streamCtrl.removeEventsListener(_listener); // ← 등록했던 인스턴스 전달
     _streamCtrl.dispose();
@@ -89,9 +93,8 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
   }
 
   Future<void> stopStreaming() async => _streamCtrl.stopStreaming();
-  // Future<void> switchCamera() async => _streamCtrl.switchCamera();
-  // Future<void> toggleMute() async => _streamCtrl.toggleMute();
 
+  // 음소거 토글
   Future<void> toggleMute() async {
     if (!_initialized) return;
     await _streamCtrl.toggleMute();
@@ -99,6 +102,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
     setState(() => _isMuted = !_isMuted);
   }
 
+  // 전후면 카메라 전환
   Future<void> switchCamera() async {
     if (!_initialized) return;
     await _streamCtrl.switchCamera();
@@ -187,23 +191,6 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                 ],
               ),
             ),
-
-            // Positioned(
-            //   left: 16,
-            //   right: 16,
-            //   bottom: 32,
-            //   child: Row(
-            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //     children: [
-            //       ElevatedButton(onPressed: switchCamera, child: const Text('카메라 전환')),
-            //       ElevatedButton(
-            //         onPressed: _isStreaming ? stopStreaming : startStreaming,
-            //         child: Text(_isStreaming ? '중지' : '송출 시작'),
-            //       ),
-            //       ElevatedButton(onPressed: toggleMute, child: const Text('음소거')),
-            //     ],
-            //   ),
-            // ),
           ],
         ),
       ),
