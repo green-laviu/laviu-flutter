@@ -27,7 +27,7 @@ class LiveStreamChatList extends ConsumerWidget {
         itemBuilder: (context, index) {
           final m = model.chatMessageList[index];
           return LiveStreamChatMsg(
-            isStreamer: m.isStreamer,
+            isStreamer: m.streamer,
             nickName: m.authorNickname,
             msg: m.content,
           );
