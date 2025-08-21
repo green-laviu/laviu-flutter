@@ -1,13 +1,16 @@
-// live_watch_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/_core/utils/m_hls.dart';
+
 import 'package:laviu_flutter/data/repository/chat_providers.dart';
 import 'package:laviu_flutter/data/repository/chat_repository.dart';
+import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
 import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_vm.dart';
+
 import 'widgets/live_watch_hls_player.dart';
-import 'package:laviu_flutter/_core/utils/m_hls.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'widgets/live_watch_header.dart';
 part 'widgets/live_watch_chat_row.dart';
@@ -19,7 +22,8 @@ const _testUrl =
 // const _testUrl = 'https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8';
 
 class LiveWatchPage extends ConsumerStatefulWidget {
-  final String liveId;
+  /// 홈에서 넘겨주는 streamId (String으로 왔으면 그대로, 내부에서 int로 변환)
+  final dynamic liveId;
   const LiveWatchPage({super.key, required this.liveId});
 
   @override
@@ -29,42 +33,30 @@ class LiveWatchPage extends ConsumerStatefulWidget {
 class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   // origin/streamKey는 실제 진입 시 주입하거나, 라우트 args/리포지토리에서 가져와도 OK
   final String _origin = 'http://host:port';
-  late final String _streamKey;
+  late final String _streamKey; // 지금은 테스트 URL을 쓰므로 placeholder로 두어도 OK
+
   final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
   final _inputFocus = FocusNode();
-  final String _wsUrl = 'ws://host:8080/ws'; // TODO: 실제 주소로 교체
-  final String _jwt = 'Bearer <YOUR_JWT>'; // TODO: 세션/GVM에서 끌어오세요
+
+  // TODO: 실제 주소/토큰으로 교체
+  final String _wsUrl = 'ws://host:8080/ws';
+  final String _jwt = 'Bearer <YOUR_JWT>';
 
   (String, String, String) get _args => (_wsUrl, _jwt, _streamKey);
 
-  // ---- 목 데이터 ----
-  late final LiveMock info;
-  // final List<UiChat> messages = [];  // 실 데이터는 provider에서 옴
+  late final int _streamId;
 
   @override
   void initState() {
     super.initState();
-    _streamKey = widget.liveId;
+    // liveId가 String/int 어떤 타입으로 와도 안전하게 처리
+    _streamId = (widget.liveId is int)
+        ? widget.liveId as int
+        : int.tryParse(widget.liveId.toString()) ?? -1;
 
-    info = LiveMock(
-      id: "live_20250807_01",
-      title: "패밀리가 떴다 같이보기 (오늘 짬방)",
-      channelName: "다주",
-      channelFollowerCount: 207000,
-      channelIsFollowing: true,
-      viewerCount: 6841,
-      badges: const ["talk", "같이보기", "패밀리가떴다"],
-      category: "예능",
-      tags: const ["오픈 채팅", "공감각적 경험"],
-      description: "패밀리 특집 라이브 방송입니다. 함께 봐요!",
-      startedAt: DateTime.parse("2025-08-07T15:00:00Z"),
-    );
-
-    // messages.addAll(const [
-    //   UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
-    //   UiChat(user: "소고기국밥", text: "진짜 재밌다"),
-    // ]);
+    // 지금은 hlsUrl 무시하고 overrideMasterUrl을 쓰므로, streamKey는 placeholder로 둬도 무방
+    _streamKey = widget.liveId.toString();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     _inputFocus.addListener(() {
@@ -84,6 +76,10 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 상세 조회
+    final detailAsync = ref.watch(liveWatchDetailProvider(_streamId));
+
+    // 채팅 상태
     final chatState = ref.watch(chatMessagesProvider(_args));
     final connState = ref.watch(chatConnStateProvider(_args));
 
@@ -95,100 +91,130 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
       backgroundColor: MColors.backgroundNormal,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            LiveWatchHlsPlayer(
-              origin: _origin,
-              streamKey: _streamKey,
-              initialQuality: LiveQuality.p1080,
-              overrideMasterUrl: _testUrl,
+        child: detailAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              '방송 정보를 불러오지 못했어요.\n$e',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            Expanded(
-              child: chatState.loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      controller: _listCtrl,
-                      padding: const EdgeInsets.only(top: 0, bottom: 8),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      itemCount: (chatState.items.length) + 1, // 0 = 헤더
-                      itemBuilder: (context, index) {
-                        if (index == 0) return LiveWatchHeader(info: info);
+          ),
+          data: (live) {
+            // -------- 서버 응답(data.live) -> 화면 모델 어댑트 --------
+            final info = _toLiveMock(live);
 
-                        // 최신을 아래로 보이게 하려면 reversed 사용
-                        final items = chatState.items.reversed.toList();
-                        final m = items[index - 1];
-
-                        // ChatMessage -> UiChat 어댑트
-                        final ui = UiChat(
-                          user:
-                              m.authorNickname + (m.isStreamer ? ' (방송인)' : ''),
-                          text: m.content,
-                        );
-                        return LiveWatchChatRow(m: ui);
-                      },
-                    ),
-            ),
-            SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-                decoration: BoxDecoration(
-                  color: MColors.white,
-                  border: Border(top: BorderSide(color: MColors.lineNormal)),
+            return Column(
+              children: [
+                // 비디오 플레이어: hlsUrl 무시, 테스트 URL로 재생
+                LiveWatchHlsPlayer(
+                  origin: _origin,
+                  streamKey: _streamKey,
+                  initialQuality: LiveQuality.p1080,
+                  overrideMasterUrl: _testUrl, // 👈 테스트용
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _inputCtrl,
-                        focusNode: _inputFocus,
-                        onTap: _scrollToBottom,
-                        minLines: 1,
-                        maxLines: 3,
-                        style: MText.inputRegular(color: MColors.textNeutral),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          hintText:
-                              (connState.valueOrNull == ChatConnState.connected)
-                              ? '채팅을 입력해주세요.'
-                              : '연결 중…',
-                          hintStyle: MText.label2Regular(
-                            color: MColors.textDisabled,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            borderSide: BorderSide(color: MColors.lineNormal),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            borderSide: BorderSide(
-                              color: MColors.primary.withOpacity(0.4),
-                            ),
-                          ),
+
+                Expanded(
+                  child: chatState.loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          controller: _listCtrl,
+                          padding: const EdgeInsets.only(top: 0, bottom: 8),
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          itemCount: (chatState.items.length) + 1, // 0 = 헤더
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return LiveWatchHeader(info: info);
+                            }
+
+                            // 최신을 아래로 보이게 하려면 reversed 사용
+                            final items = chatState.items.reversed.toList();
+                            final m = items[index - 1];
+
+                            // ChatMessage -> UiChat 어댑트
+                            final ui = UiChat(
+                              user:
+                                  m.authorNickname +
+                                  (m.isStreamer ? ' (방송인)' : ''),
+                              text: m.content,
+                            );
+                            return LiveWatchChatRow(m: ui);
+                          },
                         ),
-                        enabled:
-                            (connState.valueOrNull == ChatConnState.connected),
-                        onSubmitted: (_) => _send(),
+                ),
+
+                // 입력창
+                SafeArea(
+                  top: false,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                    decoration: BoxDecoration(
+                      color: MColors.white,
+                      border: Border(
+                        top: BorderSide(color: MColors.lineNormal),
                       ),
                     ),
-                    IconButton(
-                      onPressed:
-                          (connState.valueOrNull == ChatConnState.connected)
-                          ? _send
-                          : null,
-                      icon: const Icon(Icons.send_rounded),
-                      color: MColors.primaryStrong,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _inputCtrl,
+                            focusNode: _inputFocus,
+                            onTap: _scrollToBottom,
+                            minLines: 1,
+                            maxLines: 3,
+                            style: MText.inputRegular(
+                              color: MColors.textNeutral,
+                            ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText:
+                                  (connState.valueOrNull ==
+                                      ChatConnState.connected)
+                                  ? '채팅을 입력해주세요.'
+                                  : '연결 중…',
+                              hintStyle: MText.label2Regular(
+                                color: MColors.textDisabled,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(22),
+                                borderSide: BorderSide(
+                                  color: MColors.lineNormal,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(22),
+                                borderSide: BorderSide(
+                                  color: MColors.primary.withOpacity(0.4),
+                                ),
+                              ),
+                            ),
+                            enabled:
+                                (connState.valueOrNull ==
+                                ChatConnState.connected),
+                            onSubmitted: (_) => _send(),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed:
+                              (connState.valueOrNull == ChatConnState.connected)
+                              ? _send
+                              : null,
+                          icon: const Icon(Icons.send_rounded),
+                          color: MColors.primaryStrong,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -214,9 +240,47 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
       );
     });
   }
+
+  /// 서버(data.live) -> 화면에서 쓰는 간단 뷰 모델
+  LiveMock _toLiveMock(Map<String, dynamic> j) {
+    final channel = (j['channel'] as Map?) ?? const {};
+    final streamer = (channel['streamer'] as Map?) ?? const {};
+    final tags = ((j['hashtagList'] as List?) ?? [])
+        .whereType<Map>()
+        .map((e) => e['hashtagName']?.toString() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    return LiveMock(
+      id: (j['streamId'] ?? '').toString(),
+      title: j['title']?.toString() ?? '',
+      channelName: streamer['nickname']?.toString() ?? '',
+      channelFollowerCount: (channel['followerCount'] is num)
+          ? (channel['followerCount'] as num).toInt()
+          : 0,
+      channelIsFollowing: channel['isFollowing'] == true,
+      viewerCount: (j['viewerCount'] is num)
+          ? (j['viewerCount'] as num).toInt()
+          : 0,
+      badges: const <String>[], // 별도 배지 없으면 비워둠
+      category: '', // 서버 응답에 없으니 일단 공란
+      tags: tags,
+      description: '', // 상세 설명이 필요하면 서버 필드 추가 후 매핑
+      startedAt: _parseDate(j['startedAt']),
+    );
+  }
+
+  DateTime _parseDate(dynamic v) {
+    if (v == null) return DateTime.now();
+    try {
+      return DateTime.parse(v.toString());
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
 }
 
-/* ---------------- 목 모델 (파일 내부) ---------------- */
+/* ---------------- 목/뷰 모델 (파일 내부) ---------------- */
 
 class LiveMock {
   final String id;
@@ -261,16 +325,14 @@ class TagStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Chip 높이에 맞춰 조금 여유를 둔 고정 높이
     return SizedBox(
       height: 34,
       child: Stack(
         children: [
-          // 가로 스크롤 되는 태그 줄 (한 줄)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(right: fadeWidth), // 페이드 아래로 살짝 패딩
+            padding: EdgeInsets.only(right: fadeWidth),
             child: Row(
               children: [
                 const SizedBox(width: 2),
@@ -299,8 +361,6 @@ class TagStrip extends StatelessWidget {
               ],
             ),
           ),
-
-          // 오른쪽 페이드(살짝 넘어가는 느낌)
           Positioned(
             right: 0,
             top: 0,
@@ -314,7 +374,7 @@ class TagStrip extends StatelessWidget {
                     end: Alignment.centerRight,
                     colors: [
                       MColors.white.withOpacity(0.0),
-                      MColors.white, // 배경색에 맞춰서 자연스럽게
+                      MColors.white,
                     ],
                   ),
                 ),
