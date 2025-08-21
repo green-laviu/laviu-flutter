@@ -13,6 +13,10 @@ class LiveStreamVM extends Notifier<LiveStreamModel?> {
 
   @override
   LiveStreamModel? build() {
+    ref.onDispose(() {
+      Logger().d("LiveStreamVM 파괴됨");
+    });
+
     return null;
   }
 
