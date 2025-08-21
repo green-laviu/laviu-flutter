@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 import 'package:laviu_flutter/data/repository/live_stream_repository.dart';
 import 'package:laviu_flutter/main.dart';
+import 'package:logger/logger.dart';
 
 final liveStreamProvider = NotifierProvider<LiveStreamVM, LiveStreamModel?>(() {
   return LiveStreamVM();

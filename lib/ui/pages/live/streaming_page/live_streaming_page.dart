@@ -192,7 +192,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                       if (streamModel != null) {
                         await vm.end(streamModel.liveStream.streamId);
                       } else {
-                        Logger().w("end 호출 문제 발생 : streamModel == null");
+                        Logger().e("end 호출 문제 발생 : streamModel == null");
                       }
                       Navigator.pop(context);
                     },
