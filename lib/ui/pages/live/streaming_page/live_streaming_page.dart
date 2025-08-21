@@ -188,6 +188,12 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                     onStop: () async {
                       await stopStreaming();
                       if (!context.mounted) return;
+                      final streamModel = ref.read(liveStreamProvider);
+                      if (streamModel != null) {
+                        await vm.end(streamModel.liveStream.streamId);
+                      } else {
+                        Logger().e("end 호출 문제 발생 : streamModel == null");
+                      }
                       Navigator.pop(context);
                     },
                     onToggleMute: _initialized ? toggleMute : null,
