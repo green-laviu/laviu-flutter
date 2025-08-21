@@ -23,4 +23,12 @@ class LiveStreamRepository {
     Logger().d('LiveStreamRepository의 start: ${responseBody}');
     return responseBody;
   }
+
+  Future<Map<String, dynamic>> end(int streamId) async {
+    Response response = await dio.put("/s/api/v1/streams/${streamId}/end");
+    final responseBody = response.data;
+    // final responseBody = {"status": 200, "msg": "성공", "data": null};
+    Logger().d('LiveStreamRepository의 end: ${responseBody}');
+    return responseBody;
+  }
 }
