@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
+import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
 
 class HomeBannerCarousel extends StatelessWidget {
   final PageController controller;
@@ -54,7 +55,7 @@ class HomeBannerCarousel extends StatelessWidget {
                           // 썸네일 (404 대비)
                           Positioned.fill(
                             child: Image.network(
-                              item.thumbnailUrl!,
+                              item.thumbnailUrl ?? '',
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 color: MColors.lineNormal,
@@ -83,7 +84,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                       color: Colors.white,
                                     ),
                                   ),
-                                  color: const Color(0xFFE53935), // 레드 계열
+                                  color: const Color(0xFFE53935),
                                 ),
                                 const SizedBox(width: 6),
                                 _pill(
@@ -96,7 +97,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${_compact(item.viewerCount!)}명',
+                                        '${_compact(item.viewerCount ?? 0)}명',
                                         style: MText.label2Bold(
                                           color: Colors.white,
                                         ),
@@ -109,7 +110,7 @@ class HomeBannerCarousel extends StatelessWidget {
                             ),
                           ),
 
-                          // 하단 그라데이션 (텍스트 가독성)
+                          // 하단 그라데이션
                           Positioned.fill(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
@@ -151,7 +152,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                   children: [
                                     ClipOval(
                                       child: Image.network(
-                                        item.streamerProfileImageUrl!,
+                                        item.streamerProfileImageUrl ?? '',
                                         width: 18,
                                         height: 18,
                                         fit: BoxFit.cover,
@@ -165,7 +166,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        item.streamerName!,
+                                        item.streamerName ?? '',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
@@ -192,6 +193,27 @@ class HomeBannerCarousel extends StatelessWidget {
                                   ],
                                 ),
                               ],
+                            ),
+                          ),
+
+                          // 탭 영역 (리플 포함, 카드 전체 클릭)
+                          Positioned.fill(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      // LiveWatchPage의 liveId 타입이 String이면: item.streamId.toString()
+                                      builder: (_) => LiveWatchPage(
+                                        liveId: item.streamId.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ],
@@ -243,14 +265,11 @@ Widget _chip(String text) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.14), // 살짝 비치는 느낌
+      color: Colors.white.withOpacity(0.14),
       borderRadius: BorderRadius.circular(999),
       border: Border.all(color: Colors.white.withOpacity(0.22)),
     ),
-    child: Text(
-      text,
-      style: MText.label2Regular(color: Colors.white),
-    ),
+    child: Text(text, style: MText.label2Regular(color: Colors.white)),
   );
 }
 
