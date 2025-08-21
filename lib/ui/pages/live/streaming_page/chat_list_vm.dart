@@ -70,10 +70,10 @@ class ChatListModel {
   ChatListModel(this.chatMessageList);
 
   ChatListModel.fromMap(Map<String, dynamic> data)
-    : chatMessageList = (data['chatMessageList'] as List).map((e) => ChatMessage.fromJson(e)).toList();
+    : chatMessageList = (data['chatMessageList'] as List).map((e) => ChatMessage.fromMap(e)).toList();
 
   ChatListModel.fromList(List<dynamic> data)
-    : chatMessageList = data.map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e))).toList();
+    : chatMessageList = data.map((e) => ChatMessage.fromMap(Map<String, dynamic>.from(e))).toList();
 
   ChatListModel copyWith({
     List<ChatMessage>? chatMessageList,

@@ -68,10 +68,10 @@ class ChatRepository {
           // JSON 문자열이 배열 → List<dynamic>으로 변환
           // JSON 문자열이 객체 → Map<String, dynamic>으로 변환
           final decoded = jsonDecode(body);
-
+          Logger().d("서버에서 받은 ChatMessage decoded: $decoded");
           // 배열인 경우
           if (decoded is List) {
-            final list = decoded.cast<Map>().map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e))).toList();
+            final list = decoded.cast<Map>().map((e) => ChatMessage.fromMap(Map<String, dynamic>.from(e))).toList();
 
             //변환된 List<ChatMessage>를 콜백으로 넘겨줌.
             // UI단에서는 이 콜백을 받아서 Riverpod 상태 갱신 등 처리.
@@ -80,7 +80,7 @@ class ChatRepository {
           // 객체인 경우
           else if (decoded is Map) {
             onChatMessages!.call(
-              [ChatMessage.fromJson(Map<String, dynamic>.from(decoded))],
+              [ChatMessage.fromMap(Map<String, dynamic>.from(decoded))],
             );
           }
         } catch (e) {

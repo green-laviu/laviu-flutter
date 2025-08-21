@@ -15,18 +15,18 @@ class ChatMessage {
     required this.timestamp,
   });
 
-  factory ChatMessage.fromJson(Map<String, dynamic> j) {
+  factory ChatMessage.fromMap(Map<String, dynamic> data) {
     return ChatMessage(
-      authorId: j['authorId'] as int,
-      authorNickname: j['authorNickname'] as String,
-      emailId: j['emailId'] as String,
-      isStreamer: j['isStreamer'] as bool,
-      content: j['content'] as String,
-      timestamp: DateTime.parse(j['timestamp'] as String),
+      authorId: data['authorId'] as int,
+      authorNickname: data['authorNickname'] as String,
+      emailId: data['emailId'] as String,
+      isStreamer: data['isStreamer'] as bool,
+      content: data['content'] as String,
+      timestamp: DateTime.parse(data['timestamp'] as String),
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
     'authorId': authorId,
     'authorNickname': authorNickname,
     'emailId': emailId,
