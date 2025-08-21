@@ -4,7 +4,13 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { input ->
+        localProperties.load(input)
+    }
+}
 android {
     namespace = "com.example.laviu_flutter"
     compileSdk = flutter.compileSdkVersion
@@ -28,6 +34,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        resValue("string", "client_id", "\"${localProperties["NAVER_CLIENT_ID"]}\"")
+        resValue("string", "client_secret", "\"${localProperties["NAVER_CLIENT_SECRET"]}\"")
+        resValue("string", "client_name", "\"${localProperties["NAVER_CLIENT_NAME"]}\"")
     }
 
     buildTypes {
