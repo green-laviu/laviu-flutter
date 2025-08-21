@@ -22,7 +22,6 @@ class LiveStreamChatList extends ConsumerWidget {
     } else {
       return ListView.builder(
         controller: _scrollCtrl,
-        reverse: true, // 최신 메시지가 아래로
         itemCount: model.chatMessageList.length,
         itemBuilder: (context, index) {
           final m = model.chatMessageList[index];
