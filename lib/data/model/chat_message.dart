@@ -2,7 +2,7 @@ class ChatMessage {
   final int authorId;
   final String authorNickname;
   final String emailId; // email의 @ 앞부분
-  final bool streamer;
+  final bool isStreamer;
   final String content;
   final DateTime timestamp; // ISO-8601 문자열을 DateTime으로 파싱
 
@@ -10,7 +10,7 @@ class ChatMessage {
     required this.authorId,
     required this.authorNickname,
     required this.emailId,
-    required this.streamer,
+    required this.isStreamer,
     required this.content,
     required this.timestamp,
   });
@@ -20,7 +20,7 @@ class ChatMessage {
       authorId: data['authorId'] as int,
       authorNickname: data['authorNickname'] as String,
       emailId: data['emailId'] as String,
-      streamer: data['streamer'] as bool,
+      isStreamer: data['isStreamer'] as bool,
       content: data['content'] as String,
       timestamp: DateTime.parse(data['timestamp'] as String),
     );
@@ -30,7 +30,7 @@ class ChatMessage {
     'authorId': authorId,
     'authorNickname': authorNickname,
     'emailId': emailId,
-    'streamer': streamer,
+    'isStreamer': isStreamer,
     'content': content,
     'timestamp': timestamp.toIso8601String(),
   };

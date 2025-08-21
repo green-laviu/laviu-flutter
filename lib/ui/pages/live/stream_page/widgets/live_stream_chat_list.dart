@@ -18,7 +18,7 @@ class LiveStreamChatList extends ConsumerWidget {
     ChatListModel? model = ref.watch(chatListProvider(streamKey));
 
     if (model == null) {
-      return Container();
+      return const SizedBox.shrink();
     } else {
       return ListView.builder(
         controller: _scrollCtrl,
@@ -26,7 +26,7 @@ class LiveStreamChatList extends ConsumerWidget {
         itemBuilder: (context, index) {
           final m = model.chatMessageList[index];
           return LiveStreamChatMsg(
-            isStreamer: m.streamer,
+            isStreamer: m.isStreamer,
             nickName: m.authorNickname,
             msg: m.content,
           );
