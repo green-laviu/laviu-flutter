@@ -34,4 +34,7 @@ class ChatMessage {
     'content': content,
     'timestamp': timestamp.toIso8601String(),
   };
+
+  /// 중복 판단용 키 (id가 없으므로 조합키 사용)
+  String get dedupKey => '$authorId|${timestamp.toIso8601String()}|$content';
 }

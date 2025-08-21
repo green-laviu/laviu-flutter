@@ -14,34 +14,44 @@ class LiveStreamVM extends Notifier<LiveStreamModel?> {
 
   @override
   LiveStreamModel? build() {
+    ref.onDispose(() {
+      Logger().d("LiveStreamVM 파괴됨");
+    });
+
     return null;
   }
 
   Future<void> start(String title, List<String> hashtagList) async {
-    Logger().d("(1) 생방송 시작 버튼 클릭: start() 호출됨 → title=$title, hashtagList=$hashtagList");
-
     final data = {
       "title": title,
       "hashtagList": hashtagList,
     };
 
-    Logger().d("(2) LiveStreamRepository.start 호출");
     Map<String, dynamic> body = await LiveStreamRepository().start(data);
-    Logger().d("(3) Repository 응답 수신: $body");
 
     if (body["status"] != 200) {
-      Logger().e("(999) start 실패: status=${body["status"]}, msg=${body["msg"]}");
       ScaffoldMessenger.of(mContext).showSnackBar(
         SnackBar(content: Text("생방송 시작하기 실패 : ${body["msg"]}")),
       );
       return;
     }
 
-    Logger().d("(4) LiveStreamModel.fromMap으로 state 갱신");
     state = LiveStreamModel.fromMap(body["data"]);
-    Logger().d("(5) state 변경 완료: $state");
+  }
 
-    Logger().d("(6) start() 정상 동작 완료");
+  Future<void> end(int streamId) async {
+    Map<String, dynamic> body = await LiveStreamRepository().end(streamId);
+
+    if (body["status"] != 200) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("생방송 종료 실패 : ${body["msg"]}")),
+      );
+      return;
+    }
+
+    state = null;
+
+    Navigator.pop(mContext);
   }
 }
 
