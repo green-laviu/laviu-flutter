@@ -11,16 +11,16 @@ class Participant {
     required this.connectedAt,
   });
 
-  factory Participant.fromJson(Map<String, dynamic> j) {
+  factory Participant.fromMap(Map<String, dynamic> data) {
     return Participant(
-      nickname: j['nickname'] as String,
-      emailId: j['emailId'] as String,
-      userId: j['userId'] as int,
-      connectedAt: DateTime.parse(j['connectedAt'] as String),
+      nickname: data['nickname'] as String,
+      emailId: data['emailId'] as String,
+      userId: data['userId'] as int,
+      connectedAt: DateTime.parse(data['connectedAt'] as String),
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
     'nickname': nickname,
     'emailId': emailId,
     'userId': userId,
