@@ -2,29 +2,52 @@
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/data/repository/chat_providers.dart';
+import 'package:laviu_flutter/data/repository/chat_repository.dart';
+import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_vm.dart';
+import 'widgets/live_watch_hls_player.dart';
+import 'package:laviu_flutter/_core/utils/m_hls.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// UI만 그리는 목 버전. 데이터/플레이어/소켓 없음.
-class LiveWatchPage extends StatefulWidget {
+part 'widgets/live_watch_header.dart';
+part 'widgets/live_watch_chat_row.dart';
+
+// 예시 테스트 URL들(하나 골라서 _testUrl에 대입)
+const _testUrl =
+    'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'; // Big Buck Bunny
+// const _testUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8';
+// const _testUrl = 'https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8';
+
+class LiveWatchPage extends ConsumerStatefulWidget {
   final String liveId;
   const LiveWatchPage({super.key, required this.liveId});
 
   @override
-  State<LiveWatchPage> createState() => _LiveWatchPageState();
+  ConsumerState<LiveWatchPage> createState() => _LiveWatchPageState();
 }
 
-class _LiveWatchPageState extends State<LiveWatchPage> {
+class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
+  // origin/streamKey는 실제 진입 시 주입하거나, 라우트 args/리포지토리에서 가져와도 OK
+  final String _origin = 'http://host:port';
+  late final String _streamKey;
   final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
   final _inputFocus = FocusNode();
+  final String _wsUrl = 'ws://host:8080/ws'; // TODO: 실제 주소로 교체
+  final String _jwt = 'Bearer <YOUR_JWT>'; // TODO: 세션/GVM에서 끌어오세요
+
+  (String, String, String) get _args => (_wsUrl, _jwt, _streamKey);
 
   // ---- 목 데이터 ----
-  late final _LiveMock info;
-  final List<_UiChat> messages = [];
+  late final LiveMock info;
+  // final List<UiChat> messages = [];  // 실 데이터는 provider에서 옴
 
   @override
   void initState() {
     super.initState();
-    info = _LiveMock(
+    _streamKey = widget.liveId;
+
+    info = LiveMock(
       id: "live_20250807_01",
       title: "패밀리가 떴다 같이보기 (오늘 짬방)",
       channelName: "다주",
@@ -38,12 +61,11 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
       startedAt: DateTime.parse("2025-08-07T15:00:00Z"),
     );
 
-    messages.addAll(const [
-      _UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
-      _UiChat(user: "소고기국밥", text: "진짜 재밌다"),
-    ]);
+    // messages.addAll(const [
+    //   UiChat(user: "Pepper Zero", text: "오 무야호ㅋㅋㅋ"),
+    //   UiChat(user: "소고기국밥", text: "진짜 재밌다"),
+    // ]);
 
-    // 첫 렌더 후 맨 아래로
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     _inputFocus.addListener(() {
       if (_inputFocus.hasFocus) {
@@ -62,71 +84,51 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(chatMessagesProvider(_args));
+    final connState = ref.watch(chatConnStateProvider(_args));
+
+    // 새 메시지 올 때마다 바닥 고정 (과하지 않게 한 번씩만)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: MColors.backgroundNormal,
-      // AppBar 제거
       body: SafeArea(
-        bottom: false, // 하단 입력은 따로 SafeArea로 감쌈
+        bottom: false,
         child: Column(
           children: [
-            // 1) 플레이어 영역(그림만)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                children: [
-                  Container(color: Colors.black),
-                  Positioned(
-                    left: 8,
-                    top: 8,
-                    child: Row(
-                      children: [
-                        _pill('LIVE', const Color(0xFFE53935)),
-                        const SizedBox(width: 6),
-                        _pill('실시간', Colors.black.withOpacity(0.6)),
-                      ],
-                    ),
-                  ),
-                  const Center(
-                    child: Icon(
-                      Icons.play_circle_outline,
-                      size: 64,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: LinearProgressIndicator(
-                      value: 0.6,
-                      backgroundColor: Colors.white10,
-                      color: MColors.primaryStrong,
-                      minHeight: 3,
-                    ),
-                  ),
-                ],
-              ),
+            LiveWatchHlsPlayer(
+              origin: _origin,
+              streamKey: _streamKey,
+              initialQuality: LiveQuality.p1080,
+              overrideMasterUrl: _testUrl,
             ),
-
-            // 2) 메타/채널/채팅 리스트 (reverse)
             Expanded(
-              child: ListView.builder(
-                controller: _listCtrl,
-                padding: const EdgeInsets.only(top: 0, bottom: 8),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                itemCount: messages.length + 1, // 0번은 헤더
-                itemBuilder: (context, index) {
-                  if (index == 0)
-                    return _HeaderSection(info: info); // 플레이어 바로 아래
-                  final m = messages[index - 1]; // 채팅은 정상 순서
-                  return _ChatRow(m: m);
-                },
-              ),
-            ),
+              child: chatState.loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      controller: _listCtrl,
+                      padding: const EdgeInsets.only(top: 0, bottom: 8),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount: (chatState.items.length) + 1, // 0 = 헤더
+                      itemBuilder: (context, index) {
+                        if (index == 0) return LiveWatchHeader(info: info);
 
-            // 3) 하단 입력바 (키보드 가림 방지: SafeArea로 처리)
+                        // 최신을 아래로 보이게 하려면 reversed 사용
+                        final items = chatState.items.reversed.toList();
+                        final m = items[index - 1];
+
+                        // ChatMessage -> UiChat 어댑트
+                        final ui = UiChat(
+                          user:
+                              m.authorNickname + (m.isStreamer ? ' (방송인)' : ''),
+                          text: m.content,
+                        );
+                        return LiveWatchChatRow(m: ui);
+                      },
+                    ),
+            ),
             SafeArea(
               top: false,
               child: Container(
@@ -147,7 +149,10 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
                         style: MText.inputRegular(color: MColors.textNeutral),
                         decoration: InputDecoration(
                           isDense: true,
-                          hintText: '채팅을 입력해주세요.',
+                          hintText:
+                              (connState.valueOrNull == ChatConnState.connected)
+                              ? '채팅을 입력해주세요.'
+                              : '연결 중…',
                           hintStyle: MText.label2Regular(
                             color: MColors.textDisabled,
                           ),
@@ -166,11 +171,16 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
                             ),
                           ),
                         ),
+                        enabled:
+                            (connState.valueOrNull == ChatConnState.connected),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
                     IconButton(
-                      onPressed: _send,
+                      onPressed:
+                          (connState.valueOrNull == ChatConnState.connected)
+                          ? _send
+                          : null,
                       icon: const Icon(Icons.send_rounded),
                       color: MColors.primaryStrong,
                     ),
@@ -188,9 +198,7 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      messages.add(_UiChat(user: '나', text: text));
-    });
+    ref.read(chatMessagesProvider(_args).notifier).send(text);
 
     _inputCtrl.clear();
     _scrollToBottom();
@@ -210,7 +218,7 @@ class _LiveWatchPageState extends State<LiveWatchPage> {
 
 /* ---------------- 목 모델 (파일 내부) ---------------- */
 
-class _LiveMock {
+class LiveMock {
   final String id;
   final String title;
   final String channelName;
@@ -223,7 +231,7 @@ class _LiveMock {
   final String description;
   final DateTime startedAt;
 
-  _LiveMock({
+  LiveMock({
     required this.id,
     required this.title,
     required this.channelName,
@@ -238,208 +246,18 @@ class _LiveMock {
   });
 }
 
-class _UiChat {
+class UiChat {
   final String user;
   final String text;
-  const _UiChat({required this.user, required this.text});
+  const UiChat({required this.user, required this.text});
 }
 
 /* ---------------- 위젯/헬퍼 ---------------- */
 
-class _HeaderSection extends StatelessWidget {
-  final _LiveMock info;
-  const _HeaderSection({required this.info});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 제목/칩/통계
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                info.title,
-                style: MText.modal3Bold(color: MColors.textNeutral),
-              ),
-              const SizedBox(height: 8),
-              // (위) title, SizedBox(height: 8) 까지는 그대로 두고,
-              // 이 자리의 Wrap(...)을 교체:
-              _TagStrip(
-                items: [
-                  ...info.badges,
-                  ...info.tags,
-                ],
-              ),
-
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Text(
-                    '${_compact(info.viewerCount)}명 시청중',
-                    style: MText.caption(color: MColors.textAlternative),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '스트리밍 중',
-                    style: MText.caption(color: MColors.textAlternative),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // 채널 카드
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: SizedBox(
-            height: 56, // compact
-            child: Row(
-              children: [
-                // 아바타 (작게)
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: MColors.lineNormal,
-                  child: Text(
-                    info.channelName.isEmpty
-                        ? '?'
-                        : String.fromCharCode(
-                            info.channelName.runes.first,
-                          ).toUpperCase(),
-                    style: MText.label2Medium(color: MColors.textNeutral),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // 채널명 + 팔로워
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        info.channelName,
-                        style: MText.label1SemiBold(color: MColors.textNeutral),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '팔로워 ${_compact(info.channelFollowerCount)}',
-                        style: MText.caption(color: MColors.textAlternative),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-
-                // 팔로우 버튼 (미니)
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(0, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                  ),
-                  child: Text(
-                    info.channelIsFollowing ? '팔로잉' : '팔로우',
-                    style: MText.label2Medium(
-                      color: info.channelIsFollowing
-                          ? MColors.textAlternative
-                          : MColors.primaryStrong,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        Divider(
-          height: 0.5,
-          thickness: 0.5,
-          color: MColors.lineNormal.withOpacity(0.18),
-        ),
-        const SizedBox(height: 4),
-      ],
-    );
-  }
-}
-
-class _ChatRow extends StatelessWidget {
-  final _UiChat m;
-  const _ChatRow({required this.m});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ), // 2 -> 6
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${m.user} ',
-                  style: MText.label1Medium(color: _nameColor(m.user)),
-                ),
-                TextSpan(
-                  text: m.text,
-                  style: MText.caption(color: MColors.textNeutral),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-        ],
-      ),
-    );
-  }
-}
-
-class _AvatarFallback extends StatelessWidget {
-  final String name;
-  const _AvatarFallback({required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = name.isEmpty
-        ? '?'
-        : String.fromCharCode(name.runes.first).toUpperCase(); // 대문자 처리
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: MColors.lineNormal,
-      child: Text(
-        initials,
-        style: MText.label1SemiBold(color: MColors.textNeutral),
-      ),
-    );
-  }
-}
-
-Widget _pill(String text, Color color) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Text(text, style: MText.label2Bold(color: Colors.white)),
-  );
-}
-
-class _TagStrip extends StatelessWidget {
+class TagStrip extends StatelessWidget {
   final List<String> items;
   final double fadeWidth;
-  const _TagStrip({required this.items, this.fadeWidth = 24});
+  const TagStrip({super.key, required this.items, this.fadeWidth = 24});
 
   @override
   Widget build(BuildContext context) {
@@ -509,80 +327,7 @@ class _TagStrip extends StatelessWidget {
   }
 }
 
-class _ChannelCompactRow extends StatelessWidget {
-  final _LiveMock info;
-  const _ChannelCompactRow({required this.info});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SizedBox(
-        height: 56, // 컴팩트 높이
-        child: Row(
-          children: [
-            // 아바타 더 작게
-            CircleAvatar(
-              radius: 16, // 20 -> 16
-              backgroundColor: MColors.lineNormal,
-              child: Text(
-                info.channelName.isEmpty
-                    ? '?'
-                    : String.fromCharCode(
-                        info.channelName.runes.first,
-                      ).toUpperCase(),
-                style: MText.label2Medium(color: MColors.textNeutral),
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // 이름 + 팔로워 (작게)
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    info.channelName,
-                    style: MText.label1SemiBold(color: MColors.textNeutral),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '팔로워 ${_compact(info.channelFollowerCount)}',
-                    style: MText.caption(color: MColors.textAlternative),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            // 팔로우 버튼 (미니)
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                minimumSize: const Size(0, 32), // 낮은 높이
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-              ),
-              child: Text(
-                info.channelIsFollowing ? '팔로잉' : '팔로우',
-                style: MText.label2Medium(
-                  color: info.channelIsFollowing
-                      ? MColors.textAlternative
-                      : MColors.primaryStrong,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-Color _nameColor(String name) {
+Color nameColor(String name) {
   final code = name.codeUnits.fold<int>(0, (p, e) => (p + e) & 0xFF);
   final palette = [
     Colors.blue,
@@ -595,7 +340,7 @@ Color _nameColor(String name) {
   return palette[code % palette.length];
 }
 
-String _compact(int n) {
+String compact(int n) {
   if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
   if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
   return '$n';

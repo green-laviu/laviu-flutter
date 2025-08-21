@@ -36,7 +36,10 @@ class MQualitySheet extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
                 '고화질 (1080p)',
-                style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: MColors.textNormal,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               trailing: Icon(Icons.check, color: MColors.textNormal),
               onTap: () {},
@@ -46,7 +49,10 @@ class MQualitySheet extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
                 '일반화질 (720p)',
-                style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: MColors.textNormal,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               trailing: Icon(Icons.check, color: MColors.textNormal),
               onTap: () {},
@@ -56,7 +62,10 @@ class MQualitySheet extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
                 '저화질 (480p)',
-                style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: MColors.textNormal,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               trailing: Icon(Icons.check, color: MColors.textNormal),
               onTap: () {},
