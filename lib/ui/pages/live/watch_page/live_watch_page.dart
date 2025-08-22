@@ -8,8 +8,8 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
 import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
-import 'package:laviu_flutter/ui/pages/live/watch_page/widgets/live_watch_chat_input_bar.dart';
-import 'package:laviu_flutter/ui/pages/live/watch_page/widgets/live_watch_chat_list.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
 
 import 'widgets/live_watch_hls_player.dart';
 
@@ -107,8 +107,8 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
 
                 // 채팅 리스트 (팀원 스타일)
                 Expanded(
-                  child: LiveWatchChatList(
-                    scrollCtrl: scrollCtrl, // 필요시 상태로 빼도 OK
+                  child: LiveStreamChatList(
+                    scrollCtrl: ScrollController(), // 필요시 상태로 빼도 OK
                     streamKey: streamKey,
                   ),
                 ),
@@ -124,8 +124,8 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                         top: BorderSide(color: MColors.lineNormal),
                       ),
                     ),
-                    child: LiveWatchChatInputBar(
-                      msgCtrl: msgCtrl, // 필요시 상태로 빼도 OK
+                    child: LiveStreamChatInputBar(
+                      msgCtrl: TextEditingController(), // 필요시 상태로 빼도 OK
                       streamKey: streamKey,
                     ),
                   ),
