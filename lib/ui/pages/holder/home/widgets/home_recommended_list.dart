@@ -12,19 +12,23 @@ class HomeRecommendedList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, index) => MLiveRow(
-          item: lives[index],
-          borderColor: MColors.lineNormal,
-          onTap: () {
-            // TODO: live_watch_page로 이동
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => LiveWatchPage(liveId: lives.toString()),
-              ),
-            );
-          },
-        ),
+        (context, index) {
+          final item = lives[index];
+          return MLiveRow(
+            item: item,
+            borderColor: MColors.lineNormal,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  // LiveWatchPage의 liveId 타입이 String이면: item.streamId.toString()
+                  builder: (_) =>
+                      LiveWatchPage(liveId: item.streamId.toString()),
+                ),
+              );
+            },
+          );
+        },
         childCount: lives.length,
       ),
     );
