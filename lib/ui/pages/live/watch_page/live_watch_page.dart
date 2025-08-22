@@ -1,3 +1,5 @@
+// lib/ui/pages/live/watch_page/live_watch_page.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,19 +7,17 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
 
-import 'package:laviu_flutter/data/repository/chat_providers.dart';
-import 'package:laviu_flutter/data/repository/chat_repository.dart';
 import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
-import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_vm.dart';
 
 import 'widgets/live_watch_hls_player.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+// ⬇️ 채팅은 UI(행 렌더러)만 남긴다.
 part 'widgets/live_watch_header.dart';
 part 'widgets/live_watch_chat_row.dart';
 
 class LiveWatchPage extends ConsumerStatefulWidget {
-  /// 홈에서 넘겨주는 streamId (String으로 왔으면 그대로, 내부에서 int로 변환)
+  /// 홈에서 넘겨주는 streamId (String/int 모두 허용)
   final dynamic liveId;
   const LiveWatchPage({super.key, required this.liveId});
 
@@ -26,26 +26,25 @@ class LiveWatchPage extends ConsumerStatefulWidget {
 }
 
 class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
-  // TODO: 실제 주소/토큰으로 교체 (채팅용)
-  final String _wsUrl = 'ws://host:8080/ws';
-  final String _jwt = 'Bearer <YOUR_JWT>';
-
+  // --------- 채팅: UI만 남기고 내부 로컬 메모리만 사용 ---------
   final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
   final _inputFocus = FocusNode();
+  final List<UiChat> _messages = []; // 오래된 → 최신 순으로 보관
 
+  // --------- 상세/HLS 관련 ---------
   late final int _streamId;
-  late final String _streamKeyForChat; // 채팅 args에 쓰는 키(지금은 streamId string)
-  (String, String, String) get _args => (_wsUrl, _jwt, _streamKeyForChat);
 
   @override
   void initState() {
     super.initState();
+
+    // streamId 정규화
     _streamId = (widget.liveId is int)
         ? widget.liveId as int
         : int.tryParse(widget.liveId.toString()) ?? -1;
-    _streamKeyForChat = widget.liveId.toString();
 
+    // 입력창 포커스 시 살짝 내려주기
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     _inputFocus.addListener(() {
       if (_inputFocus.hasFocus) {
@@ -64,13 +63,10 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 상세 조회
+    // 상세 조회 (그대로 유지: 비디오/헤더용)
     final detailAsync = ref.watch(liveWatchDetailProvider(_streamId));
 
-    // 채팅 상태
-    final chatState = ref.watch(chatMessagesProvider(_args));
-    final connState = ref.watch(chatConnStateProvider(_args));
-
+    // 새 메시지 올 때마다 바닥 고정
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
     return Scaffold(
@@ -88,49 +84,40 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
             ),
           ),
           data: (live) {
-            // 화면 헤더용 모델
+            // -------- 서버 응답(data.live) -> 화면 모델 어댑트 --------
             final info = _toLiveMock(live);
 
-            // HLS 재생 파라미터
-            final master = _absoluteHls(live['hlsUrl'] as String?); // 우선 사용
+            // HLS 재생 파라미터 (서버가 마스터 URL 주면 그걸 우선 사용)
+            final master = _absoluteHls(live['hlsUrl'] as String?);
             final origin = dotenv.env['HLS_BASE_URL'] ?? _baseFromApi(8081);
             final streamKey =
                 (live['streamKey']?.toString() ?? widget.liveId.toString());
 
             return Column(
               children: [
-                // 비디오 플레이어
+                // ✅ 비디오 플레이어는 그대로 유지
                 LiveWatchHlsPlayer(
                   origin: origin,
                   streamKey: streamKey,
                   initialQuality: LiveQuality.p1080,
-                  overrideMasterUrl: master, // 있으면 마스터 ABR, 없으면 고정식
+                  overrideMasterUrl: master, // 있으면 마스터(ABR), 없으면 fixed식
                 ),
 
+                // ✅ 채팅 UI만 남김 (로컬 상태)
                 Expanded(
-                  child: chatState.loading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ListView.builder(
-                          controller: _listCtrl,
-                          padding: const EdgeInsets.only(top: 0, bottom: 8),
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          itemCount: (chatState.items.length) + 1, // 0 = 헤더
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return LiveWatchHeader(info: info);
-                            }
-                            final items = chatState.items.reversed.toList();
-                            final m = items[index - 1];
-                            final ui = UiChat(
-                              user:
-                                  m.authorNickname +
-                                  (m.isStreamer ? ' (방송인)' : ''),
-                              text: m.content,
-                            );
-                            return LiveWatchChatRow(m: ui);
-                          },
-                        ),
+                  child: ListView.builder(
+                    controller: _listCtrl,
+                    padding: const EdgeInsets.only(top: 0, bottom: 8),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    itemCount: _messages.length + 1, // 0 = 헤더
+                    itemBuilder: (context, index) {
+                      if (index == 0) return LiveWatchHeader(info: info);
+
+                      final m = _messages[index - 1];
+                      return LiveWatchChatRow(m: m);
+                    },
+                  ),
                 ),
 
                 // 입력창
@@ -158,11 +145,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                             ),
                             decoration: InputDecoration(
                               isDense: true,
-                              hintText:
-                                  (connState.valueOrNull ==
-                                      ChatConnState.connected)
-                                  ? '채팅을 입력해주세요.'
-                                  : '연결 중…',
+                              hintText: '채팅을 입력해주세요.', // 연결 개념 제거
                               hintStyle: MText.label2Regular(
                                 color: MColors.textDisabled,
                               ),
@@ -183,17 +166,11 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                                 ),
                               ),
                             ),
-                            enabled:
-                                (connState.valueOrNull ==
-                                ChatConnState.connected),
                             onSubmitted: (_) => _send(),
                           ),
                         ),
                         IconButton(
-                          onPressed:
-                              (connState.valueOrNull == ChatConnState.connected)
-                              ? _send
-                              : null,
+                          onPressed: _send,
                           icon: const Icon(Icons.send_rounded),
                           color: MColors.primaryStrong,
                         ),
@@ -212,7 +189,11 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   void _send() {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
-    ref.read(chatMessagesProvider(_args).notifier).send(text);
+
+    // 💬 연결/레포 없이 로컬로만 추가 (UI 확인용)
+    final mine = UiChat(user: '나', text: text);
+    setState(() => _messages.add(mine));
+
     _inputCtrl.clear();
     _scrollToBottom();
   }
@@ -228,7 +209,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
     });
   }
 
-  /// 서버(data.live) -> 화면에서 쓰는 간단 뷰 모델
+  /// 서버(data.live) -> 화면에서 쓰는 간단 뷰 모델 (헤더용)
   LiveMock _toLiveMock(Map<String, dynamic> j) {
     final channel = (j['channel'] as Map?) ?? const {};
     final streamer = (channel['streamer'] as Map?) ?? const {};
@@ -288,7 +269,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   }
 }
 
-/* ---------------- 목/뷰 모델 ---------------- */
+/* ---------------- 목/뷰 모델(헤더·채팅 UI 의존) ---------------- */
 
 class LiveMock {
   final String id;
@@ -324,74 +305,7 @@ class UiChat {
   const UiChat({required this.user, required this.text});
 }
 
-/* ---------------- 위젯/헬퍼 ---------------- */
-
-class TagStrip extends StatelessWidget {
-  final List<String> items;
-  final double fadeWidth;
-  const TagStrip({super.key, required this.items, this.fadeWidth = 24});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 34,
-      child: Stack(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(right: fadeWidth),
-            child: Row(
-              children: [
-                const SizedBox(width: 2),
-                ...items.map(
-                  (t) => Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: MColors.lineNormal),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        t,
-                        style: MText.label2Regular(
-                          color: MColors.textAlternative,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 2),
-              ],
-            ),
-          ),
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                width: fadeWidth,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [MColors.white.withOpacity(0.0), MColors.white],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
+/// 채팅 닉네임 색상 (채팅 행에서 사용)
 Color nameColor(String name) {
   final code = name.codeUnits.fold<int>(0, (p, e) => (p + e) & 0xFF);
   final palette = [
@@ -405,6 +319,7 @@ Color nameColor(String name) {
   return palette[code % palette.length];
 }
 
+/// 수치 압축 표기 (헤더에서 사용)
 String compact(int n) {
   if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
   if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';

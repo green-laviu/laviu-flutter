@@ -109,3 +109,80 @@ class LiveWatchHeader extends StatelessWidget {
     );
   }
 }
+
+// ---------------- TagStrip (간단 태그 스크롤) ----------------
+class TagStrip extends StatelessWidget {
+  final List<String> items;
+  final double fadeWidth;
+  const TagStrip({super.key, required this.items, this.fadeWidth = 24});
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const SizedBox(height: 0);
+    }
+
+    return SizedBox(
+      height: 34,
+      child: Stack(
+        children: [
+          // 가로 스크롤 태그 나열
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.only(right: fadeWidth),
+            child: Row(
+              children: [
+                const SizedBox(width: 2),
+                ...items.map(
+                  (t) => Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: MColors.lineNormal),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        t,
+                        style: MText.label2Regular(
+                          color: MColors.textAlternative,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+              ],
+            ),
+          ),
+
+          // 오른쪽 페이드(넘치는 느낌)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                width: fadeWidth,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      MColors.white.withOpacity(0.0),
+                      MColors.white,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
