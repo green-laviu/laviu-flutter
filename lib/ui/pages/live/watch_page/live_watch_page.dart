@@ -1,20 +1,21 @@
 // lib/ui/pages/live/watch_page/live_watch_page.dart
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
-
 import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
 
 import 'widgets/live_watch_hls_player.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+part 'widgets/live_watch_chat_row.dart';
 // ⬇️ 채팅은 UI(행 렌더러)만 남긴다.
 part 'widgets/live_watch_header.dart';
-part 'widgets/live_watch_chat_row.dart';
 
 class LiveWatchPage extends ConsumerStatefulWidget {
   /// 홈에서 넘겨주는 streamId (String/int 모두 허용)
@@ -40,9 +41,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
     super.initState();
 
     // streamId 정규화
-    _streamId = (widget.liveId is int)
-        ? widget.liveId as int
-        : int.tryParse(widget.liveId.toString()) ?? -1;
+    _streamId = (widget.liveId is int) ? widget.liveId as int : int.tryParse(widget.liveId.toString()) ?? -1;
 
     // 입력창 포커스 시 살짝 내려주기
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -65,6 +64,8 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   Widget build(BuildContext context) {
     // 상세 조회 (그대로 유지: 비디오/헤더용)
     final detailAsync = ref.watch(liveWatchDetailProvider(_streamId));
+    final scrollCtrl = ScrollController();
+    final msgCtrl = TextEditingController();
 
     // 새 메시지 올 때마다 바닥 고정
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -84,39 +85,31 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
             ),
           ),
           data: (live) {
-            // -------- 서버 응답(data.live) -> 화면 모델 어댑트 --------
             final info = _toLiveMock(live);
 
-            // HLS 재생 파라미터 (서버가 마스터 URL 주면 그걸 우선 사용)
             final master = _absoluteHls(live['hlsUrl'] as String?);
             final origin = dotenv.env['HLS_BASE_URL'] ?? _baseFromApi(8081);
-            final streamKey =
-                (live['streamKey']?.toString() ?? widget.liveId.toString());
+            final streamKey = (live['streamKey']?.toString() ?? widget.liveId.toString());
 
+            // 여기부터 Column 내부 전체
             return Column(
               children: [
-                // ✅ 비디오 플레이어는 그대로 유지
+                // 비디오
                 LiveWatchHlsPlayer(
                   origin: origin,
                   streamKey: streamKey,
                   initialQuality: LiveQuality.p1080,
-                  overrideMasterUrl: master, // 있으면 마스터(ABR), 없으면 fixed식
+                  overrideMasterUrl: master,
                 ),
 
-                // ✅ 채팅 UI만 남김 (로컬 상태)
-                Expanded(
-                  child: ListView.builder(
-                    controller: _listCtrl,
-                    padding: const EdgeInsets.only(top: 0, bottom: 8),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    itemCount: _messages.length + 1, // 0 = 헤더
-                    itemBuilder: (context, index) {
-                      if (index == 0) return LiveWatchHeader(info: info);
+                // 빠졌던 방송정보(제목/태그/채널 카드) 다시 추가
+                LiveWatchHeader(info: info),
 
-                      final m = _messages[index - 1];
-                      return LiveWatchChatRow(m: m);
-                    },
+                // 채팅 리스트 (팀원 스타일)
+                Expanded(
+                  child: LiveStreamChatList(
+                    scrollCtrl: ScrollController(), // 필요시 상태로 빼도 OK
+                    streamKey: streamKey,
                   ),
                 ),
 
@@ -131,50 +124,9 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                         top: BorderSide(color: MColors.lineNormal),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _inputCtrl,
-                            focusNode: _inputFocus,
-                            onTap: _scrollToBottom,
-                            minLines: 1,
-                            maxLines: 3,
-                            style: MText.inputRegular(
-                              color: MColors.textNeutral,
-                            ),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              hintText: '채팅을 입력해주세요.', // 연결 개념 제거
-                              hintStyle: MText.label2Regular(
-                                color: MColors.textDisabled,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(22),
-                                borderSide: BorderSide(
-                                  color: MColors.lineNormal,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(22),
-                                borderSide: BorderSide(
-                                  color: MColors.primary.withOpacity(0.4),
-                                ),
-                              ),
-                            ),
-                            onSubmitted: (_) => _send(),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _send,
-                          icon: const Icon(Icons.send_rounded),
-                          color: MColors.primaryStrong,
-                        ),
-                      ],
+                    child: LiveStreamChatInputBar(
+                      msgCtrl: TextEditingController(), // 필요시 상태로 빼도 OK
+                      streamKey: streamKey,
                     ),
                   ),
                 ),
@@ -223,13 +175,9 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
       id: (j['streamId'] ?? '').toString(),
       title: j['title']?.toString() ?? '',
       channelName: streamer['nickname']?.toString() ?? '',
-      channelFollowerCount: (channel['followerCount'] is num)
-          ? (channel['followerCount'] as num).toInt()
-          : 0,
+      channelFollowerCount: (channel['followerCount'] is num) ? (channel['followerCount'] as num).toInt() : 0,
       channelIsFollowing: channel['isFollowing'] == true,
-      viewerCount: (j['viewerCount'] is num)
-          ? (j['viewerCount'] as num).toInt()
-          : 0,
+      viewerCount: (j['viewerCount'] is num) ? (j['viewerCount'] as num).toInt() : 0,
       badges: const <String>[],
       category: '',
       tags: tags,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:laviu_flutter/_core/utils/m_device.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
 import 'package:logger/logger.dart';
@@ -12,7 +13,7 @@ class ChatRepository {
   String? _streamKey;
 
   // 서버 주소
-  final String wsUrl = "ws://192.168.0.133:8080/ws";
+  final baseUrl = dotenv.env['BASE_URL']!;
 
   /// 외부(Riverpod VM)에서 주입할 수신 콜백
   /// - 초기 30개(배열) 또는 단건(객체)이 와도 항상 List로 전달
@@ -33,7 +34,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig.sockJS(
-        url: 'http://192.168.0.133:8080/ws',
+        url: '$baseUrl/ws',
         stompConnectHeaders: {'Authorization': '$token'},
         webSocketConnectHeaders: {'Authorization': '$token'},
         onConnect: (frame) => _onConnect(frame, streamKey),
