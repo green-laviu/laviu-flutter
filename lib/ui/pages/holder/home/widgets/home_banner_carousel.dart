@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
-import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
 
 class HomeBannerCarousel extends StatelessWidget {
   final PageController controller;
@@ -18,6 +17,10 @@ class HomeBannerCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox(height: 0));
+    }
+
     return SliverToBoxAdapter(
       child: Column(
         children: [
@@ -31,6 +34,11 @@ class HomeBannerCarousel extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final selected = (index - page).abs() < 0.6;
+
+                  final thumb = item.thumbnailUrl;
+                  final nickname = item.streamerName ?? '';
+                  final avatar = item.streamerProfileImageUrl;
+                  final viewers = item.viewerCount ?? 0;
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -52,23 +60,39 @@ class HomeBannerCarousel extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       child: Stack(
                         children: [
-                          // 썸네일 (404 대비)
+                          // 썸네일 (null/404 대비)
                           Positioned.fill(
-                            child: Image.network(
-                              item.thumbnailUrl ?? '',
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: MColors.lineNormal,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '이미지를 불러올 수 없어요',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: MColors.textAlternative,
+                            child: (thumb == null || thumb.isEmpty)
+                                ? Container(
+                                    color: MColors.lineNormal,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '이미지를 불러올 수 없어요',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: MColors.textAlternative,
+                                          ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    thumb,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: MColors.lineNormal,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '이미지를 불러올 수 없어요',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: MColors.textAlternative,
+                                            ),
                                       ),
-                                ),
-                              ),
-                            ),
+                                    ),
+                                  ),
                           ),
 
                           // 상단 좌측: LIVE + 시청자수
@@ -97,7 +121,7 @@ class HomeBannerCarousel extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${_compact(item.viewerCount ?? 0)}명',
+                                        '${_compact(viewers)}명',
                                         style: MText.label2Bold(
                                           color: Colors.white,
                                         ),
@@ -147,26 +171,38 @@ class HomeBannerCarousel extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 8),
 
-                                // 메타: 아바타 + 닉네임 + 해시태그(최대 2개만)
                                 Row(
                                   children: [
                                     ClipOval(
-                                      child: Image.network(
-                                        item.streamerProfileImageUrl ?? '',
-                                        width: 18,
-                                        height: 18,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                          width: 18,
-                                          height: 18,
-                                          color: Colors.white24,
-                                        ),
-                                      ),
+                                      child: (avatar == null || avatar.isEmpty)
+                                          ? Container(
+                                              width: 18,
+                                              height: 18,
+                                              color: Colors.white24,
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.person,
+                                                size: 12,
+                                                color: Colors.white70,
+                                              ),
+                                            )
+                                          : Image.network(
+                                              avatar,
+                                              width: 18,
+                                              height: 18,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  Container(
+                                                    width: 18,
+                                                    height: 18,
+                                                    color: Colors.white24,
+                                                  ),
+                                            ),
                                     ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        item.streamerName ?? '',
+                                        nickname.isEmpty ? '스트리머' : nickname,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
@@ -193,27 +229,6 @@ class HomeBannerCarousel extends StatelessWidget {
                                   ],
                                 ),
                               ],
-                            ),
-                          ),
-
-                          // 탭 영역 (리플 포함, 카드 전체 클릭)
-                          Positioned.fill(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      // LiveWatchPage의 liveId 타입이 String이면: item.streamId.toString()
-                                      builder: (_) => LiveWatchPage(
-                                        liveId: item.streamId.toString(),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
                             ),
                           ),
                         ],
@@ -269,7 +284,10 @@ Widget _chip(String text) {
       borderRadius: BorderRadius.circular(999),
       border: Border.all(color: Colors.white.withOpacity(0.22)),
     ),
-    child: Text(text, style: MText.label2Regular(color: Colors.white)),
+    child: Text(
+      text,
+      style: MText.label2Regular(color: Colors.white),
+    ),
   );
 }
 
