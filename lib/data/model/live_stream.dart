@@ -32,24 +32,25 @@ class LiveStream {
   factory LiveStream.fromJson(Map<String, dynamic> map) {
     final List<Hashtag> parsedHashtags;
 
-    // List<Hashtag> hashtagList
     if (map['hashtagList'] is List) {
       parsedHashtags = (map['hashtagList'] as List)
-          .whereType<Map<String, dynamic>>() // map인 애들만 추출
-          .map((e) => Hashtag.fromMap(e)) // map → Hashtag(클래스) 변환
+          .whereType<Map<String, dynamic>>()
+          .map((e) => Hashtag.fromMap(e))
           .toList();
-    } // List<String> hashtags
-    else if (map['hashtags'] is List) {
+    } else if (map['hashtags'] is List) {
       parsedHashtags = (map['hashtags'] as List)
           .whereType<String>()
-          .map((name) => Hashtag(hashtagName: name)) // id 없이 생성
+          .map((name) => Hashtag(hashtagName: name))
           .toList();
     } else {
       parsedHashtags = const [];
     }
 
-    // 서버에서 받아온 stream status 값
+    // 서버 status or 기존 streamStatus
     final statusValue = (map['streamStatus'] ?? map['status']) as String?;
+
+    // streamer 객체 처리
+    final streamer = map['streamer'] as Map<String, dynamic>?;
 
     return LiveStream(
       streamId: map['streamId'] as int,
@@ -57,9 +58,13 @@ class LiveStream {
       title: map['title'] as String,
       streamStatus: StreamStatus.fromValue(statusValue),
       hashtagList: parsedHashtags,
-      streamerId: map['streamerId'] as int?,
-      streamerName: map['streamerName'] as String?,
-      streamerProfileImageUrl: map['streamerProfileImageUrl'] as String?,
+      // 평탄화
+      streamerId: streamer?['userId'] as int? ?? map['streamerId'] as int?,
+      streamerName:
+          streamer?['nickname'] as String? ?? map['streamerName'] as String?,
+      streamerProfileImageUrl:
+          streamer?['profileImageUrl'] as String? ??
+          map['streamerProfileImageUrl'] as String?,
       viewerCount: map['viewerCount'] as int?,
       thumbnailUrl: map['thumbnailUrl'] as String?,
     );
