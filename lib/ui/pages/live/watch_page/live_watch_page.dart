@@ -95,7 +95,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
             final streamKey =
                 (live['streamKey']?.toString() ?? widget.liveId.toString());
 
-            // ✅ 여기부터 Column 내부 전체
+            // 여기부터 Column 내부 전체
             return Column(
               children: [
                 // 비디오
@@ -106,7 +106,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                   overrideMasterUrl: master,
                 ),
 
-                // ✅ 빠졌던 방송정보(제목/태그/채널 카드) 다시 추가
+                // 빠졌던 방송정보(제목/태그/채널 카드) 다시 추가
                 LiveWatchHeader(info: info),
 
                 // 채팅 리스트 (팀원 스타일)
