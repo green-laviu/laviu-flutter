@@ -23,13 +23,6 @@ class UserRepository {
     return responseBody;
   }
 
-  Future<Map<String, dynamic>> writeAdditionalInfo(Map<String, dynamic> data) async {
-    Response response = await dio.put("/s/user/addtion-info", data: data);
-    final responseBody = response.data;
-    Logger().d('UserRepository의 writeAdditionalInfo: ${responseBody}');
-    return responseBody;
-  }
-
   Future<Map<String, dynamic>> update(Map<String, dynamic> data) async {
     Response response = await dio.put("/s/api/users", data: data);
     Logger().d("update data : $data");
