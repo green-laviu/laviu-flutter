@@ -11,15 +11,10 @@ import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
 import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_vm.dart';
 
 import 'widgets/live_watch_hls_player.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 part 'widgets/live_watch_header.dart';
 part 'widgets/live_watch_chat_row.dart';
-
-// 예시 테스트 URL들(하나 골라서 _testUrl에 대입)
-const _testUrl =
-    'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'; // Big Buck Bunny
-// const _testUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8';
-// const _testUrl = 'https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8';
 
 class LiveWatchPage extends ConsumerStatefulWidget {
   /// 홈에서 넘겨주는 streamId (String으로 왔으면 그대로, 내부에서 int로 변환)
@@ -31,32 +26,25 @@ class LiveWatchPage extends ConsumerStatefulWidget {
 }
 
 class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
-  // origin/streamKey는 실제 진입 시 주입하거나, 라우트 args/리포지토리에서 가져와도 OK
-  final String _origin = 'http://host:port';
-  late final String _streamKey; // 지금은 테스트 URL을 쓰므로 placeholder로 두어도 OK
+  // TODO: 실제 주소/토큰으로 교체 (채팅용)
+  final String _wsUrl = 'ws://host:8080/ws';
+  final String _jwt = 'Bearer <YOUR_JWT>';
 
   final _listCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
   final _inputFocus = FocusNode();
 
-  // TODO: 실제 주소/토큰으로 교체
-  final String _wsUrl = 'ws://host:8080/ws';
-  final String _jwt = 'Bearer <YOUR_JWT>';
-
-  (String, String, String) get _args => (_wsUrl, _jwt, _streamKey);
-
   late final int _streamId;
+  late final String _streamKeyForChat; // 채팅 args에 쓰는 키(지금은 streamId string)
+  (String, String, String) get _args => (_wsUrl, _jwt, _streamKeyForChat);
 
   @override
   void initState() {
     super.initState();
-    // liveId가 String/int 어떤 타입으로 와도 안전하게 처리
     _streamId = (widget.liveId is int)
         ? widget.liveId as int
         : int.tryParse(widget.liveId.toString()) ?? -1;
-
-    // 지금은 hlsUrl 무시하고 overrideMasterUrl을 쓰므로, streamKey는 placeholder로 둬도 무방
-    _streamKey = widget.liveId.toString();
+    _streamKeyForChat = widget.liveId.toString();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     _inputFocus.addListener(() {
@@ -83,7 +71,6 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
     final chatState = ref.watch(chatMessagesProvider(_args));
     final connState = ref.watch(chatConnStateProvider(_args));
 
-    // 새 메시지 올 때마다 바닥 고정 (과하지 않게 한 번씩만)
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
     return Scaffold(
@@ -101,17 +88,23 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
             ),
           ),
           data: (live) {
-            // -------- 서버 응답(data.live) -> 화면 모델 어댑트 --------
+            // 화면 헤더용 모델
             final info = _toLiveMock(live);
+
+            // HLS 재생 파라미터
+            final master = _absoluteHls(live['hlsUrl'] as String?); // 우선 사용
+            final origin = dotenv.env['HLS_BASE_URL'] ?? _baseFromApi(8081);
+            final streamKey =
+                (live['streamKey']?.toString() ?? widget.liveId.toString());
 
             return Column(
               children: [
-                // 비디오 플레이어: hlsUrl 무시, 테스트 URL로 재생
+                // 비디오 플레이어
                 LiveWatchHlsPlayer(
-                  origin: _origin,
-                  streamKey: _streamKey,
+                  origin: origin,
+                  streamKey: streamKey,
                   initialQuality: LiveQuality.p1080,
-                  overrideMasterUrl: _testUrl, // 👈 테스트용
+                  overrideMasterUrl: master, // 있으면 마스터 ABR, 없으면 고정식
                 ),
 
                 Expanded(
@@ -127,12 +120,8 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                             if (index == 0) {
                               return LiveWatchHeader(info: info);
                             }
-
-                            // 최신을 아래로 보이게 하려면 reversed 사용
                             final items = chatState.items.reversed.toList();
                             final m = items[index - 1];
-
-                            // ChatMessage -> UiChat 어댑트
                             final ui = UiChat(
                               user:
                                   m.authorNickname +
@@ -223,9 +212,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   void _send() {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
-
     ref.read(chatMessagesProvider(_args).notifier).send(text);
-
     _inputCtrl.clear();
     _scrollToBottom();
   }
@@ -262,10 +249,10 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
       viewerCount: (j['viewerCount'] is num)
           ? (j['viewerCount'] as num).toInt()
           : 0,
-      badges: const <String>[], // 별도 배지 없으면 비워둠
-      category: '', // 서버 응답에 없으니 일단 공란
+      badges: const <String>[],
+      category: '',
       tags: tags,
-      description: '', // 상세 설명이 필요하면 서버 필드 추가 후 매핑
+      description: '',
       startedAt: _parseDate(j['startedAt']),
     );
   }
@@ -278,9 +265,30 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
       return DateTime.now();
     }
   }
+
+  // ---------------- HLS 도우미 ----------------
+
+  /// 상대경로로 온 hlsUrl("/hls/abcd.m3u8")을 절대경로로 변환
+  String? _absoluteHls(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final v = raw.trim();
+    if (v.startsWith('http://') || v.startsWith('https://')) return v;
+    final base = dotenv.env['HLS_BASE_URL'] ?? _baseFromApi(8081);
+    return '$base${v.startsWith('/') ? v : '/$v'}';
+  }
+
+  /// BASE_URL에서 host를 재사용해 hls 포트(8081)로 베이스 구성
+  String _baseFromApi(int port) {
+    final api = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8080';
+    final u = Uri.tryParse(api);
+    if (u == null) return 'http://10.0.2.2:$port';
+    final scheme = u.scheme.isEmpty ? 'http' : u.scheme;
+    final host = u.host.isEmpty ? '10.0.2.2' : u.host;
+    return Uri(scheme: scheme, host: host, port: port).toString();
+  }
 }
 
-/* ---------------- 목/뷰 모델 (파일 내부) ---------------- */
+/* ---------------- 목/뷰 모델 ---------------- */
 
 class LiveMock {
   final String id;
@@ -372,10 +380,7 @@ class TagStrip extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [
-                      MColors.white.withOpacity(0.0),
-                      MColors.white,
-                    ],
+                    colors: [MColors.white.withOpacity(0.0), MColors.white],
                   ),
                 ),
               ),
