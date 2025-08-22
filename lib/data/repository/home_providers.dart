@@ -6,7 +6,11 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
   return HomeRepository();
 });
 
-final homeFeedProvider = FutureProvider<HomeFeed>((ref) async {
+/// 홈 피드: 실서버에서 조회
+/// - ref.refresh(homeFeedProvider.future)로 리프레시 가능
+/// - ref.invalidate(homeFeedProvider)로 무효화 후 재조회 가능
+final homeFeedProvider = FutureProvider.autoDispose<HomeFeed>((ref) async {
   final repo = ref.watch(homeRepositoryProvider);
-  return repo.fetchHomeFeedMock();
+  final feed = await repo.fetchHomeFeed();
+  return feed;
 });

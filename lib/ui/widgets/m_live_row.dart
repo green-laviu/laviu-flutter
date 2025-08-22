@@ -3,7 +3,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/live_stream.dart';
 
-/// 공용 라이브 카드
+/// 공용 라이브 카드 (널 안전 처리)
 class MLiveRow extends StatelessWidget {
   final LiveStream item;
   final VoidCallback? onTap;
@@ -34,6 +34,18 @@ class MLiveRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final thumb = item.thumbnailUrl;
+    final avatar = item.streamerProfileImageUrl;
+    final nickname = item.streamerName?.trim().isEmpty == true
+        ? '스트리머'
+        : (item.streamerName ?? '스트리머');
+
+    // 서버가 -1을 줄 수 있으니 0으로 클램프
+    final viewers = (item.viewerCount ?? 0);
+    final safeViewers = viewers < 0 ? 0 : viewers;
+
+    final tags = item.hashtags; // getter가 [] 보장
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -56,21 +68,32 @@ class MLiveRow extends StatelessWidget {
                     width: thumbWidth,
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: Image.network(
-                        item.thumbnailUrl!,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (c, w, p) => p == null
-                            ? w
-                            : Container(color: MColors.lineNormal),
-                        errorBuilder: (c, e, st) => Container(
-                          color: MColors.lineNormal,
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.broken_image_outlined,
-                            size: 24,
-                          ),
-                        ),
-                      ),
+                      child: (thumb == null || thumb.isEmpty)
+                          ? Container(
+                              color: MColors.lineNormal,
+                              alignment: Alignment.center,
+                              child: Text(
+                                '이미지 없음',
+                                style: MText.caption(
+                                  color: MColors.textAlternative,
+                                ),
+                              ),
+                            )
+                          : Image.network(
+                              thumb,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (c, w, p) => p == null
+                                  ? w
+                                  : Container(color: MColors.lineNormal),
+                              errorBuilder: (c, e, st) => Container(
+                                color: MColors.lineNormal,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.broken_image_outlined,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                   // 좌상단 시청자 수
@@ -95,7 +118,7 @@ class MLiveRow extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _compact(item.viewerCount!),
+                            _compact(safeViewers),
                             style: MText.label2Bold(color: Colors.white),
                           ),
                         ],
@@ -125,29 +148,41 @@ class MLiveRow extends StatelessWidget {
                   Row(
                     children: [
                       ClipOval(
-                        child: Image.network(
-                          item.streamerProfileImageUrl!,
-                          width: 20,
-                          height: 20,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (c, w, p) => p == null
-                              ? w
-                              : Container(
+                        child: (avatar == null || avatar.isEmpty)
+                            ? Container(
+                                width: 20,
+                                height: 20,
+                                color: MColors.lineNormal,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 12,
+                                  color: Colors.white70,
+                                ),
+                              )
+                            : Image.network(
+                                avatar,
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (c, w, p) => p == null
+                                    ? w
+                                    : Container(
+                                        width: 20,
+                                        height: 20,
+                                        color: MColors.lineNormal,
+                                      ),
+                                errorBuilder: (c, e, st) => Container(
                                   width: 20,
                                   height: 20,
                                   color: MColors.lineNormal,
                                 ),
-                          errorBuilder: (c, e, st) => Container(
-                            width: 20,
-                            height: 20,
-                            color: MColors.lineNormal,
-                          ),
-                        ),
+                              ),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          item.streamerName!,
+                          nickname,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: MText.caption(color: MColors.textAlternative),
@@ -156,11 +191,11 @@ class MLiveRow extends StatelessWidget {
                     ],
                   ),
 
-                  if (showTags) ...[
+                  if (showTags && tags.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 28,
-                      child: _TagScroller(tags: item.hashtags),
+                      child: _TagScroller(tags: tags),
                     ),
                   ],
                 ],
@@ -181,6 +216,8 @@ class _TagScroller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (tags.isEmpty) return const SizedBox.shrink();
+
     return Stack(
       children: [
         ListView.separated(
@@ -253,6 +290,7 @@ class _TagChip extends StatelessWidget {
 }
 
 String _compact(int n) {
+  if (n < 0) n = 0;
   if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
   if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
   return '$n';

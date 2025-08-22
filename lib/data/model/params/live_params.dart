@@ -37,6 +37,4 @@ class LiveParams {
 
   // RTMP
   final rtmpUrl = dotenv.env['RTMP_BASE_URL']!;
-  // String rtmpUrl = "rtmp://127.0.0.1:1935/live"; // 예: rtmp://192.168.0.10:1935/live
-  // String streamKey = "5067c36c-091c-4402-a1b9-f86f8eccbbb7"; // 예: test
 }
