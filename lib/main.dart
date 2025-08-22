@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_theme.dart';
+import 'package:laviu_flutter/ui/pages/auth/login_page/login_page.dart';
+import 'package:laviu_flutter/ui/pages/holder/main_holder.dart';
 import 'package:laviu_flutter/ui/pages/splash/splash_page.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -22,6 +24,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: mTheme(),
       home: SplashPage(),
+      routes: {
+        "/main-holder": (context) => MainHolder(),
+        "/login": (context) => const LoginPage(),
+      },
     );
   }
 }
