@@ -1,3 +1,8 @@
-NAVER_CLIENT_ID=
-NAVER_CLIENT_SECRET=
+# 네이버 로그인 Client ID (네이버 개발자센터 → 애플리케이션 → Client ID 확인 후 입력)
+NAVER_CLIENT_ID=PUT_YOUR_CLIENT_ID_HERE
+
+# 네이버 로그인 Client Secret (네이버 개발자센터 → 애플리케이션 → Client Secret 확인 후 입력)
+NAVER_CLIENT_SECRET=PUT_YOUR_CLIENT_SECRET_HERE
+
+# 네이버 앱 이름(식별용)
 NAVER_CLIENT_NAME=laviu
