@@ -88,29 +88,31 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
             ),
           ),
           data: (live) {
-            // -------- 서버 응답(data.live) -> 화면 모델 어댑트 --------
             final info = _toLiveMock(live);
 
-            // HLS 재생 파라미터 (서버가 마스터 URL 주면 그걸 우선 사용)
             final master = _absoluteHls(live['hlsUrl'] as String?);
             final origin = dotenv.env['HLS_BASE_URL'] ?? _baseFromApi(8081);
             final streamKey =
                 (live['streamKey']?.toString() ?? widget.liveId.toString());
 
+            // ✅ 여기부터 Column 내부 전체
             return Column(
               children: [
-                // 비디오 플레이어는 그대로 유지
+                // 비디오
                 LiveWatchHlsPlayer(
                   origin: origin,
                   streamKey: streamKey,
                   initialQuality: LiveQuality.p1080,
-                  overrideMasterUrl: master, // 있으면 마스터(ABR), 없으면 fixed식
+                  overrideMasterUrl: master,
                 ),
 
-                // 채팅 UI만 남김 (로컬 상태)
+                // ✅ 빠졌던 방송정보(제목/태그/채널 카드) 다시 추가
+                LiveWatchHeader(info: info),
+
+                // 채팅 리스트 (팀원 스타일)
                 Expanded(
                   child: LiveStreamChatList(
-                    scrollCtrl: scrollCtrl,
+                    scrollCtrl: ScrollController(), // 필요시 상태로 빼도 OK
                     streamKey: streamKey,
                   ),
                 ),
@@ -127,7 +129,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                       ),
                     ),
                     child: LiveStreamChatInputBar(
-                      msgCtrl: msgCtrl,
+                      msgCtrl: TextEditingController(), // 필요시 상태로 빼도 OK
                       streamKey: streamKey,
                     ),
                   ),
