@@ -1,20 +1,24 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
 import 'package:laviu_flutter/data/repository/chat_repository.dart';
 import 'package:laviu_flutter/main.dart';
 import 'package:logger/logger.dart';
 
-final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, String>(() {
+final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, (String, int)>(() {
   return ChatListVM();
 });
 
-class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
+class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)> {
   final mContext = navigatorKey.currentContext!;
 
   late final ChatRepository _chatRepository;
 
   @override
-  ChatListModel? build(String streamKey) {
+  ChatListModel? build((String streamKey, int streamId) args) {
+    final streamKey = args.$1;
+    final streamId = args.$2;
+
     _chatRepository = ChatRepository();
 
     // 콜백 등록 (호출 X)
@@ -22,7 +26,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
       appendNewMessages(messages);
     };
 
-    init(streamKey);
+    init(streamKey, streamId);
 
     ref.onDispose(() async {
       Logger().d("ChatListVM 파괴됨");
@@ -32,8 +36,20 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
     return null;
   }
 
-  Future<void> init(String streamKey) async {
+  Future<void> init(String streamKey, int streamId) async {
     await _chatRepository.connect(streamKey);
+
+    Map<String, dynamic> body = await _chatRepository.getChatList(streamId);
+
+    if (body["status"] != 200) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("채팅 목록 조회 실패 : ${body["msg"]}")),
+      );
+      return;
+    }
+    final data = (body['data'] as List).map((e) => ChatMessage.fromMap(Map<String, dynamic>.from(e))).toList();
+
+    appendNewMessages(data);
   }
 
   void appendNewMessages(List<ChatMessage> incoming) {

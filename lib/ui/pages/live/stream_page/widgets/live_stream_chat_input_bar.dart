@@ -11,14 +11,16 @@ class LiveStreamChatInputBar extends ConsumerWidget {
     super.key,
     required TextEditingController msgCtrl,
     required this.streamKey,
+    required this.streamId,
   }) : _msgCtrl = msgCtrl;
 
   final TextEditingController _msgCtrl;
   final String streamKey;
+  final int streamId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.read(chatListProvider(streamKey).notifier);
+    final vm = ref.read(chatListProvider((streamKey, streamId)).notifier);
 
     void sendChat() {
       final text = _msgCtrl.text.trim();

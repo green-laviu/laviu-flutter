@@ -65,6 +65,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
                     child: LiveStreamChatList(
                       scrollCtrl: _scrollCtrl,
                       streamKey: model.liveStream.streamKey,
+                      streamId: model.liveStream.streamId,
                     ),
                   ),
                   SizedBox(height: MSizes.gapM),
@@ -72,6 +73,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
                   LiveStreamChatInputBar(
                     msgCtrl: _msgCtrl,
                     streamKey: model.liveStream.streamKey,
+                    streamId: model.liveStream.streamId,
                   ),
                 ],
               ),

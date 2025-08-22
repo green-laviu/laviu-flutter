@@ -110,6 +110,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                   child: LiveStreamChatList(
                     scrollCtrl: ScrollController(), // 필요시 상태로 빼도 OK
                     streamKey: streamKey,
+                    streamId: _streamId,
                   ),
                 ),
 
@@ -127,6 +128,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                     child: LiveStreamChatInputBar(
                       msgCtrl: TextEditingController(), // 필요시 상태로 빼도 OK
                       streamKey: streamKey,
+                      streamId: _streamId,
                     ),
                   ),
                 ),

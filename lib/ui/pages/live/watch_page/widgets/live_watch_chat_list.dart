@@ -10,17 +10,19 @@ class LiveWatchChatList extends ConsumerWidget {
     super.key,
     required ScrollController scrollCtrl,
     required this.streamKey,
+    required this.streamId,
   }) : _scrollCtrl = scrollCtrl;
 
   final ScrollController _scrollCtrl;
   final String streamKey;
+  final int streamId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ChatListModel? model = ref.watch(chatListProvider(streamKey));
+    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId)));
 
     // ref.listen :상태 변화가 생길 때 특정 동작을 실행 (prev: 이전 상태, next: 바뀐 후 상태)
-    ref.listen<ChatListModel?>(chatListProvider(streamKey), (prev, next) {
+    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId)), (prev, next) {
       if (next == null) return;
 
       final prevLen = prev?.chatMessageList.length ?? 0;
