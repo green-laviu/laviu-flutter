@@ -10,9 +10,6 @@ Future<void> saveAccessToken(String? accessToken) async {
 
 // AccessToken 조회
 Future<String?> getAccessToken() async {
-  final accessToken =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsYXZpdSIsInJvbGVzIjoiVVNFUiIsIm5pY2tuYW1lIjoidGVzdFN0cmVhbWVyIiwiaWQiOjUsImV4cCI6MTc1NjI2NjEzMywiZW1haWwiOiJ0ZXN0U3RyZWFtZXJAbmF0ZS5jb20ifQ.Buvlkcat0_GSYQunSuAYpoO94Rf5IOyZj1sLrYKKTox_iwaDLWzLYZp1nowvV8m2_W_FT7QCmWgtvHdltcIlkw";
-  await saveAccessToken(accessToken);
   return await secureStorage.read(key: "accessToken");
 }
 
