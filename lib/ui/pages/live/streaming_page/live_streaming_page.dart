@@ -1,7 +1,7 @@
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:laviu_flutter/data/model/params/params.dart';
+import 'package:laviu_flutter/data/model/params/live_params.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
 import 'package:laviu_flutter/ui/pages/live/streaming_page/widgets/live_streaming_preview_overlay.dart';
@@ -22,7 +22,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
 
   late final ApiVideoLiveStreamController _streamCtrl;
   late final ApiVideoLiveStreamEventsListener _listener;
-  final params = Params();
+  final liveParams = LiveParams();
 
   bool _initialized = false;
   bool _isStreaming = false;
@@ -37,8 +37,8 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
     WakelockPlus.enable(); // 화면 꺼짐 방지
 
     _streamCtrl = ApiVideoLiveStreamController(
-      initialVideoConfig: params.videoConfig,
-      initialAudioConfig: params.audioConfig,
+      initialVideoConfig: liveParams.videoConfig,
+      initialAudioConfig: liveParams.audioConfig,
     );
 
     _listener = ApiVideoLiveStreamEventsListener(
@@ -94,7 +94,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
 
     // 송출 시작
     await _streamCtrl.startStreaming(
-      url: params.rtmpUrl,
+      url: liveParams.rtmpUrl,
       streamKey: model.liveStream.streamKey,
     );
   }

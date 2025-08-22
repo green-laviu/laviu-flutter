@@ -1,6 +1,7 @@
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class Params {
+class LiveParams {
   // 비디오
   int videoBitrate = 1_000_000; // bps
   Resolution videoResolution = Resolution.RESOLUTION_360;
@@ -35,7 +36,5 @@ class Params {
   );
 
   // RTMP
-  String rtmpUrl =
-      "rtmp://192.168.0.69:1935/live"; // rtmp://127.0.0.1:1935/live
-  // String streamKey = "5067c36c-091c-4402-a1b9-f86f8eccbbb7"; // 예: test
+  final rtmpUrl = dotenv.env['RTMP_BASE_URL']!;
 }
