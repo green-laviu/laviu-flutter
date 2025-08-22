@@ -8,6 +8,8 @@ import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
 
 import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_input_bar.dart';
+import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_chat_list.dart';
 
 import 'widgets/live_watch_hls_player.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -65,6 +67,8 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
   Widget build(BuildContext context) {
     // 상세 조회 (그대로 유지: 비디오/헤더용)
     final detailAsync = ref.watch(liveWatchDetailProvider(_streamId));
+    final scrollCtrl = ScrollController();
+    final msgCtrl = TextEditingController();
 
     // 새 메시지 올 때마다 바닥 고정
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -95,7 +99,7 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
 
             return Column(
               children: [
-                // ✅ 비디오 플레이어는 그대로 유지
+                // 비디오 플레이어는 그대로 유지
                 LiveWatchHlsPlayer(
                   origin: origin,
                   streamKey: streamKey,
@@ -103,20 +107,11 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                   overrideMasterUrl: master, // 있으면 마스터(ABR), 없으면 fixed식
                 ),
 
-                // ✅ 채팅 UI만 남김 (로컬 상태)
+                // 채팅 UI만 남김 (로컬 상태)
                 Expanded(
-                  child: ListView.builder(
-                    controller: _listCtrl,
-                    padding: const EdgeInsets.only(top: 0, bottom: 8),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    itemCount: _messages.length + 1, // 0 = 헤더
-                    itemBuilder: (context, index) {
-                      if (index == 0) return LiveWatchHeader(info: info);
-
-                      final m = _messages[index - 1];
-                      return LiveWatchChatRow(m: m);
-                    },
+                  child: LiveStreamChatList(
+                    scrollCtrl: scrollCtrl,
+                    streamKey: streamKey,
                   ),
                 ),
 
@@ -131,50 +126,9 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
                         top: BorderSide(color: MColors.lineNormal),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _inputCtrl,
-                            focusNode: _inputFocus,
-                            onTap: _scrollToBottom,
-                            minLines: 1,
-                            maxLines: 3,
-                            style: MText.inputRegular(
-                              color: MColors.textNeutral,
-                            ),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              hintText: '채팅을 입력해주세요.', // 연결 개념 제거
-                              hintStyle: MText.label2Regular(
-                                color: MColors.textDisabled,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(22),
-                                borderSide: BorderSide(
-                                  color: MColors.lineNormal,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(22),
-                                borderSide: BorderSide(
-                                  color: MColors.primary.withOpacity(0.4),
-                                ),
-                              ),
-                            ),
-                            onSubmitted: (_) => _send(),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _send,
-                          icon: const Icon(Icons.send_rounded),
-                          color: MColors.primaryStrong,
-                        ),
-                      ],
+                    child: LiveStreamChatInputBar(
+                      msgCtrl: msgCtrl,
+                      streamKey: streamKey,
                     ),
                   ),
                 ),
