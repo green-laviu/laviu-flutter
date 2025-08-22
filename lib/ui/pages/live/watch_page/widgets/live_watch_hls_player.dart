@@ -11,7 +11,7 @@ class LiveWatchHlsPlayer extends StatefulWidget {
   final String streamKey; // {streamKey}
   final LiveQuality initialQuality;
 
-  // ⬇️ 추가: 테스트용 URL (마스터 m3u8)
+  /// 서버가 내려준 마스터 m3u8 (있으면 이걸로 ABR 재생. 수동 화질 변경 비활성)
   final String? overrideMasterUrl;
 
   const LiveWatchHlsPlayer({
@@ -19,7 +19,7 @@ class LiveWatchHlsPlayer extends StatefulWidget {
     required this.origin,
     required this.streamKey,
     this.initialQuality = LiveQuality.p1080,
-    this.overrideMasterUrl, // ⬅️ 추가 (테스트용)
+    this.overrideMasterUrl,
   });
 
   @override
@@ -60,9 +60,9 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
   }
 
   String _buildUrl() {
-    // 테스트용 공개 m3u8 강제 재생을 유지하려면 이 라인둬도 OK
+    // 마스터 m3u8이 있으면 우선 사용(자동 화질)
     if (widget.overrideMasterUrl != null) return widget.overrideMasterUrl!;
-
+    // 없으면 고정식(수동 화질 변경 가능)
     return MHlsUrl.fixed(
       origin: widget.origin,
       streamKey: widget.streamKey,
@@ -109,7 +109,9 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
   }
 
   Future<void> _showActionsSheet() async {
+    final canSelectQuality = widget.overrideMasterUrl == null; // 마스터면 비활성
     final label = _quality.label; // '1080p' ...
+
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
@@ -122,11 +124,19 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: const Icon(Icons.high_quality),
-                title: Text('해상도 $label'),
-                onTap: () => Navigator.pop(ctx, 'quality'),
-              ),
+              if (canSelectQuality)
+                ListTile(
+                  leading: const Icon(Icons.high_quality),
+                  title: Text('해상도 $label'),
+                  onTap: () => Navigator.pop(ctx, 'quality'),
+                )
+              else
+                ListTile(
+                  leading: const Icon(Icons.high_quality),
+                  title: const Text('자동 화질 (마스터 m3u8)'),
+                  subtitle: const Text('수동 변경은 지원되지 않아요'),
+                  enabled: false,
+                ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.flag_outlined),
@@ -139,7 +149,7 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
       },
     );
 
-    if (selected == 'quality') {
+    if (selected == 'quality' && canSelectQuality) {
       await _showQualitySheet();
     } else if (selected == 'report') {
       // TODO: 신고 플로우
@@ -246,7 +256,7 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
               ),
             ),
 
-            // 상단 우측 (기존 HD/Refresh Row 자리에 교체)
+            // 상단 우측 메뉴
             Positioned(
               right: 8,
               top: 8 + MediaQuery.of(context).padding.top,
@@ -254,7 +264,7 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
                 visible: _show,
                 child: IconButton(
                   icon: const Icon(Icons.more_horiz, color: Colors.white),
-                  onPressed: _showActionsSheet, // ⬅️ 아래 함수
+                  onPressed: _showActionsSheet,
                   tooltip: '메뉴',
                 ),
               ),
