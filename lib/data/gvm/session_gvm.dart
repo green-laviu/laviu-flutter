@@ -30,25 +30,25 @@ class SessionGVM extends Notifier<SessionModel> {
     // }
 
     // 2. 통신
-    Map<String, dynamic> data = await UserRepository().oauthLogin(accessToken);
-    if (data["status"] != 200) {
+    Map<String, dynamic> body = await UserRepository().oauthLogin(accessToken);
+    if (body["status"] != 200) {
       ScaffoldMessenger.of(mContext).showSnackBar(
-        SnackBar(content: Text("${data["msg"]}")),
+        SnackBar(content: Text("${body["msg"]}")),
       );
       return;
     }
 
     // 3. 파싱
-    User user = User.fromMap(data["data"]);
+    User user = User.fromMap(body["data"]);
 
     // 4. 토큰 디바이스 저장 -> 자동 로그인 가능
     await saveAccessToken(user.accessToken);
 
     // 5. 세션 모델 갱신 (현재 isLogin = false 상태)
-    state = SessionModel.fromMap(data["body"]);
+    state = SessionModel.fromMap(body["data"]);
 
     // 6. dio의 header에 토큰 세팅
-    dio.options.headers["Authorization"] = "Bearer ${user.accessToken}";
+    dio.options.headers["Authorization"] = user.accessToken;
     Logger().d('oauthLogin : ${dio.options.headers["Authorization"]}');
 
     // 7. 메인 홀더 (홈) 페이지 이동
@@ -76,16 +76,16 @@ class SessionGVM extends Notifier<SessionModel> {
     // 1. 유효성 검사
 
     // 2. 통신
-    Map<String, dynamic> data = await UserRepository().update({"nickname": nickname});
-    if (data["status"] != 200) {
+    Map<String, dynamic> body = await UserRepository().update({"nickname": nickname});
+    if (body["status"] != 200) {
       ScaffoldMessenger.of(mContext).showSnackBar(
-        SnackBar(content: Text("${data["msg"]}")),
+        SnackBar(content: Text("${body["msg"]}")),
       );
       return;
     }
 
     // 3. 세션 모델 갱신
-    state = SessionModel.fromMap(data["body"]);
+    state = SessionModel.fromMap(body["data"]);
 
     // 4. 페이지 이동
     Navigator.pop(mContext);

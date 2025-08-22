@@ -34,8 +34,8 @@ class ChatRepository {
     _client = StompClient(
       config: StompConfig.sockJS(
         url: 'http://192.168.0.133:8080/ws',
-        stompConnectHeaders: {'Authorization': 'Bearer $token'},
-        webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
+        stompConnectHeaders: {'Authorization': '$token'},
+        webSocketConnectHeaders: {'Authorization': '$token'},
         onConnect: (frame) => _onConnect(frame, streamKey),
         onWebSocketError: (err) => Logger().d('WS error: $err'),
         onStompError: (frame) => Logger().d('STOMP error: ${frame.body}'),
