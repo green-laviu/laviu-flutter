@@ -1,6 +1,6 @@
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 //
-// import 'chat_repository.dart';
+// import 'web_socket_repository.dart';
 //
 // /// ChatRepository 주입 (args: wsUrl, jwt, streamKey)
 // final chatRepositoryProvider = Provider.family<ChatRepository, (String wsUrl, String jwt, String streamKey)>((

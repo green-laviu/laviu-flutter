@@ -47,6 +47,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
             onSwitchCamera: onSwitchCamera,
             isMuted: isMuted,
             isFrontCamera: isFrontCamera,
+            streamKey: model.liveStream.streamKey,
           ),
 
           // 제목/해시태그

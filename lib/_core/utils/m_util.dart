@@ -45,3 +45,10 @@ bool isDuplicateTagIgnoreCase(List<String> tagList, String tag) {
   final lower = tag.toLowerCase();
   return tagList.any((e) => e.toLowerCase() == lower);
 }
+
+/// 이메일 주소에서 @앞 아이디 추출
+String extractEmailId(String email) {
+  if (email.isEmpty) return '';
+  final parts = email.split('@');
+  return parts.isNotEmpty ? parts.first : '';
+}

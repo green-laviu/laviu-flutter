@@ -3,20 +3,26 @@ import 'dart:convert';
 
 import 'package:laviu_flutter/_core/utils/m_device.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
+import 'package:laviu_flutter/data/model/participant.dart';
 import 'package:logger/logger.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
-class ChatRepository {
+class WebSocketRepository {
   StompClient? _client;
-  StompUnsubscribe? _sub;
+
   String? _streamKey;
+
+  // 구독별 변수
+  StompUnsubscribe? _chatSub;
+  StompUnsubscribe? _participantsSub;
 
   // 서버 주소
   final String wsUrl = "ws://192.168.0.133:8080/ws";
 
-  /// 외부(Riverpod VM)에서 주입할 수신 콜백
-  /// - 초기 30개(배열) 또는 단건(객체)이 와도 항상 List로 전달
+  // 외부(Riverpod VM)에서 주입할 수신 콜백
+  // 배열 또는 단건(객체)이 와도 항상 List로 전달
   void Function(List<ChatMessage> messages)? onChatMessages;
+  void Function(List<Participant> participants)? onParticipants;
 
   bool get connected => _client?.connected == true;
 
@@ -54,11 +60,11 @@ class ChatRepository {
   }
 
   void _subscribeChat(String streamKey) {
-    if (!connected || _sub != null) return;
+    if (!connected || _chatSub != null) return;
 
     final destination = '/sub/streams/$streamKey/chats';
     // subscribe() : 구독 시작 + 나중에 해제할 수 있는 함수(StompUnsubscribe _sub)를 돌려줌
-    _sub = _client!.subscribe(
+    _chatSub = _client!.subscribe(
       destination: destination,
       callback: (StompFrame frame) {
         final body = frame.body;
@@ -108,15 +114,82 @@ class ChatRepository {
     _client!.send(destination: '/pub/streams/${_streamKey!}/join');
   }
 
+  // 시청자 목록 구독
+  void subscribeParticipants(String streamKey) {
+    if (!connected || _participantsSub != null) return;
+
+    final destination = '/sub/streams/$streamKey/participants';
+    _participantsSub = _client!.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        final body = frame.body;
+        if (body == null || onParticipants == null) return;
+
+        try {
+          final decoded = jsonDecode(body);
+          Logger().d("서버에서 받은 Participants decoded: $decoded");
+
+          if (decoded is List) {
+            final list = decoded.cast<Map>().map((e) => Participant.fromMap(Map<String, dynamic>.from(e))).toList();
+
+            onParticipants!.call(list);
+          } else if (decoded is Map) {
+            onParticipants!.call([Participant.fromMap(Map<String, dynamic>.from(decoded))]);
+          }
+        } catch (e) {
+          Logger().d('participants 파싱 오류: $e');
+        }
+      },
+    );
+
+    Logger().d('시청자 목록 구독 완료: $destination');
+  }
+
+  // 채팅 구독 해제
+  bool unsubscribeChat() {
+    if (_chatSub == null) return false;
+    try {
+      _chatSub!.call();
+      Logger().d('채팅 구독 해제');
+    } catch (e) {
+      Logger().e('채팅 구독 해제 오류 발생: $e');
+    } finally {
+      _chatSub = null;
+    }
+    return true;
+  }
+
+  // 시청자 목록 구독 해제
+  bool unsubscribeParticipants() {
+    if (_participantsSub == null) return false;
+    try {
+      _participantsSub!.call();
+      Logger().d('시청자 목록 구독 해제');
+    } catch (e) {
+      Logger().e('시청자 목록 구독 해제 오류 발생: $e');
+    } finally {
+      _participantsSub = null;
+    }
+    return true;
+  }
+
   /// 연결 종료 (채팅 구독 해제 → 비활성화 → 상태 초기화)
   Future<void> disconnect() async {
     try {
-      // 1. 구독 해제
-      if (_sub != null) {
+      // 1. 채팅 구독 해제
+      if (_chatSub != null) {
         try {
-          _sub!.call(); // 구독 해제
+          _chatSub!.call(); // 구독 해제
         } catch (_) {}
-        _sub = null; // 초기화
+        _chatSub = null; // 초기화
+      }
+
+      // 1-2. 시청자 목록 구독 해제
+      if (_participantsSub != null) {
+        try {
+          _participantsSub!.call(); // 구독 해제
+        } catch (_) {}
+        _participantsSub = null; // 초기화
       }
 
       // 2. STOMP 종료
@@ -131,6 +204,7 @@ class ChatRepository {
       _streamKey = null;
       // 콜백 참조도 끊어 메모리 누수 방지
       onChatMessages = null;
+      onParticipants = null;
     }
   }
 

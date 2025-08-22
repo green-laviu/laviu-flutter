@@ -13,6 +13,7 @@ class LiveStreamIconBar extends ConsumerWidget {
     this.onSwitchCamera,
     this.isMuted = false,
     this.isFrontCamera = true,
+    required this.streamKey,
   });
 
   final VoidCallback onStop;
@@ -20,6 +21,7 @@ class LiveStreamIconBar extends ConsumerWidget {
   final VoidCallback? onSwitchCamera; // null이면 자동 비활성화
   final bool isMuted;
   final bool isFrontCamera;
+  final String streamKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,7 +88,7 @@ class LiveStreamIconBar extends ConsumerWidget {
                       borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                     ),
                     builder: (BuildContext sheetContext) {
-                      return LiveStreamSettingSheet();
+                      return LiveStreamSettingSheet(streamKey: streamKey);
                     },
                   );
                 },

@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
+import 'package:laviu_flutter/_core/utils/m_util.dart';
+import 'package:laviu_flutter/data/gvm/session_gvm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_viewer_info.dart';
+import 'package:laviu_flutter/ui/pages/live/streaming_page/participant_list_vm.dart';
 
-class LiveStreamViewerListSheet extends StatelessWidget {
+class LiveStreamViewerListSheet extends ConsumerWidget {
   const LiveStreamViewerListSheet({
     super.key,
+    required this.streamKey,
   });
 
+  final String streamKey;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ParticipantListModel? model = ref.watch(participantListProvider(streamKey));
+    SessionModel sessionModel = ref.read(sessionProvider);
+
     return DraggableScrollableSheet(
       initialChildSize: 0.4,
       minChildSize: 0.4,
@@ -33,7 +43,7 @@ class LiveStreamViewerListSheet extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(top: MSizes.gapS, bottom: MSizes.gapL),
                   child: Text(
-                    '라이브룸 멤버 (1000명)',
+                    '시청자 목록',
                     style: MText.heading3Bold(color: MColors.textNormal),
                   ),
                 ),
@@ -45,9 +55,9 @@ class LiveStreamViewerListSheet extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: MSizes.gapL, vertical: MSizes.gapM),
                       child: Row(
                         children: [
-                          Text('스트리머닉네임 ', style: MText.heading4(color: MColors.primaryDanger)),
+                          Text('${sessionModel.user!.nickname}', style: MText.heading4(color: MColors.primaryDanger)),
                           Text(
-                            '(아이디)',
+                            extractEmailId('${sessionModel.user!.email}'),
                             style: TextStyle(fontSize: MSizes.fontM, color: MColors.textNeutral),
                           ),
                         ],
@@ -58,32 +68,23 @@ class LiveStreamViewerListSheet extends StatelessWidget {
                 SizedBox(height: MSizes.gapS),
 
                 Text('시청자', style: MText.heading4(color: MColors.textNormal)),
-                Expanded(
-                  child: ListView(
-                    controller: scrollController,
-                    children: [
-                      LiveStreamViewerInfo(nickname: '시청자닉네임1', username: '아이디1'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임2', username: '아이디2'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임3', username: '아이디3'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임4', username: '아이디4'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임5', username: '아이디5'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임6', username: '아이디6'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임7', username: '아이디7'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임8', username: '아이디8'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임9', username: '아이디9'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임10', username: '아이디10'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임11', username: '아이디11'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임13', username: '아이디13'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임14', username: '아이디14'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임15', username: '아이디15'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임16', username: '아이디16'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임17', username: '아이디17'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임18', username: '아이디18'),
-                      LiveStreamViewerInfo(nickname: '시청자닉네임19', username: '아이디19'),
-                      LiveStreamViewerInfo(nickname: '시청자 닉네임20', username: '아이디20'),
-                    ],
+                if (model == null) ...[
+                  const SizedBox.shrink(),
+                ] else ...[
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: model.participantList.length,
+                      itemBuilder: (context, index) {
+                        final m = model.participantList[index];
+                        return LiveStreamViewerInfo(
+                          nickname: m.nickname,
+                          username: m.emailId,
+                        );
+                      },
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

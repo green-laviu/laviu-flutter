@@ -10,7 +10,9 @@ import 'package:laviu_flutter/ui/widgets/m_quality_sheet.dart';
 class LiveStreamSettingSheet extends StatelessWidget {
   const LiveStreamSettingSheet({
     super.key,
+    required this.streamKey,
   });
+  final String streamKey;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +107,7 @@ class LiveStreamSettingSheet extends StatelessWidget {
                     borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                   ),
                   builder: (context) {
-                    return LiveStreamViewerListSheet();
+                    return LiveStreamViewerListSheet(streamKey: streamKey);
                   },
                 );
               },

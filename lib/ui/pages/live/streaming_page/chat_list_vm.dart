@@ -1,24 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
-import 'package:laviu_flutter/data/repository/chat_repository.dart';
+import 'package:laviu_flutter/data/repository/web_socket_repository.dart';
 import 'package:laviu_flutter/main.dart';
 import 'package:logger/logger.dart';
 
+// 창고 관리자
 final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, String>(() {
   return ChatListVM();
 });
 
+// 창고
 class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
   final mContext = navigatorKey.currentContext!;
 
-  late final ChatRepository _chatRepository;
+  late final WebSocketRepository _webSocketRepository;
 
   @override
   ChatListModel? build(String streamKey) {
-    _chatRepository = ChatRepository();
+    _webSocketRepository = WebSocketRepository();
 
     // 콜백 등록 (호출 X)
-    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    _webSocketRepository.onChatMessages = (List<ChatMessage> messages) {
       appendNewMessages(messages);
     };
 
@@ -26,14 +28,14 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
 
     ref.onDispose(() async {
       Logger().d("ChatListVM 파괴됨");
-      await _chatRepository.dispose();
+      await _webSocketRepository.dispose();
     });
 
     return null;
   }
 
   Future<void> init(String streamKey) async {
-    await _chatRepository.connect(streamKey);
+    await _webSocketRepository.connect(streamKey);
   }
 
   void appendNewMessages(List<ChatMessage> incoming) {
@@ -56,14 +58,15 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
   }
 
   Future<void> sendChat(String content) async {
-    _chatRepository.sendChat(content);
+    _webSocketRepository.sendChat(content);
 
-    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    _webSocketRepository.onChatMessages = (List<ChatMessage> messages) {
       appendNewMessages(messages);
     };
   }
 }
 
+// 창고 데이터 타입
 class ChatListModel {
   List<ChatMessage> chatMessageList;
 
