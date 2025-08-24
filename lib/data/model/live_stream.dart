@@ -12,6 +12,7 @@ class LiveStream {
   final StreamStatus streamStatus;
   final String? thumbnailUrl;
   final List<Hashtag> hashtagList;
+  final bool? isLive;
 
   // 기존 해시태그 String 리스트 호환용 getter
   List<String> get hashtags => hashtagList.map((e) => e.hashtagName).toList();
@@ -27,6 +28,7 @@ class LiveStream {
     this.streamerProfileImageUrl,
     this.viewerCount,
     this.thumbnailUrl,
+    this.isLive,
   });
 
   factory LiveStream.fromJson(Map<String, dynamic> map) {
@@ -78,6 +80,7 @@ class LiveStream {
       thumbnailUrl:
           (map['thumbnailUrl'] ?? map['thumbUrl'] ?? map['imageUrl'])
               as String?,
+      isLive: map['isLive'],
     );
   }
 
@@ -93,6 +96,7 @@ class LiveStream {
       'streamerProfileImageUrl': streamerProfileImageUrl,
       'viewerCount': viewerCount,
       'thumbnailUrl': thumbnailUrl,
+      'isLive': isLive,
     };
   }
 }

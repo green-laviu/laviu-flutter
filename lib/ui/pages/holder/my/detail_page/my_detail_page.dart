@@ -33,7 +33,7 @@ class MyDetailPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => UserDetailPage()),
+                  MaterialPageRoute(builder: (_) => UserDetailPage(3)),
                 );
               },
               icon: Icons.people,
