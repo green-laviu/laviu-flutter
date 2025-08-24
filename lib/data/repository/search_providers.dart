@@ -16,5 +16,5 @@ final searchTabIndexProvider = StateProvider<int>(
 final searchResponseProvider = FutureProvider<SearchResponse>((ref) async {
   final repo = ref.watch(searchRepositoryProvider);
   final q = ref.watch(searchQueryProvider);
-  return repo.fetchMock(q);
+  return repo.fetch(q); // fetchMock → fetch 로 교체
 });
