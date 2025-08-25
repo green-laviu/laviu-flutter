@@ -19,14 +19,14 @@ class LoginBody extends StatelessWidget {
               Text(
                 'LAVIU',
                 style: TextStyle(
-                  color: MColors.textStrong,
+                  color: MColors.textWhite,
                   fontSize: MSizes.fontHuge,
                 ),
               ),
               Text(
                 'LAVIU를 이용하기 위해서는 로그인이 필요해요',
                 style: TextStyle(
-                  color: MColors.textNormal,
+                  color: MColors.textWhite,
                   fontSize: MSizes.fontNormal,
                 ),
               ),
