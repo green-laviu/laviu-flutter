@@ -45,6 +45,8 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
       onConnectionSuccess: () {
         if (!mounted) return;
         setState(() => _isStreaming = true);
+        // 클라이언트 기준 시작 시간 기록
+        ref.read(liveStreamProvider.notifier).setStartedAt(DateTime.now());
       },
       onDisconnection: () {
         if (!mounted) return;
@@ -120,6 +122,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
   @override
   Widget build(BuildContext context) {
     LiveStreamVM vm = ref.read(liveStreamProvider.notifier);
+    final streamModel = ref.watch(liveStreamProvider);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -156,7 +159,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                         await vm.start(previewModel.title, previewModel.hashtagList);
 
                         // 4. state 세팅 확인
-                        final streamModel = ref.read(liveStreamProvider);
+                        // final streamModel = ref.read(liveStreamProvider);
                         if (streamModel == null) {
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +191,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                     onStop: () async {
                       await stopStreaming();
                       if (!context.mounted) return;
-                      final streamModel = ref.read(liveStreamProvider);
+                      // final streamModel = ref.read(liveStreamProvider);
                       if (streamModel != null) {
                         await vm.end(streamModel.liveStream.streamId);
                       } else {
@@ -200,6 +203,7 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                     onSwitchCamera: _initialized ? switchCamera : null,
                     isMuted: _isMuted,
                     isFrontCamera: _isFrontCamera,
+                    startedAt: streamModel?.startedAt,
                   ),
                 ],
               ),

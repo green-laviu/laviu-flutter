@@ -24,7 +24,7 @@ class LoginBody extends StatelessWidget {
                 ),
               ),
               Text(
-                '라뷰를 이용하기 위해서는 로그인이 필요해요',
+                'LAVIU를 이용하기 위해서는 로그인이 필요해요',
                 style: TextStyle(
                   color: MColors.textNormal,
                   fontSize: MSizes.fontNormal,

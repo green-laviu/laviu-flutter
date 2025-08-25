@@ -53,23 +53,29 @@ class LiveStreamVM extends Notifier<LiveStreamModel?> {
 
     Navigator.pop(mContext);
   }
+
+  void setStartedAt(DateTime time) {
+    state = state!.copyWith(startedAt: time);
+  }
 }
 
 class LiveStreamModel {
-  LiveStream liveStream;
+  final LiveStream liveStream;
+  final DateTime? startedAt;
 
-  LiveStreamModel(this.liveStream);
+  LiveStreamModel(this.liveStream, this.startedAt);
 
-  LiveStreamModel.fromMap(Map<String, dynamic> data) : liveStream = LiveStream.fromJson(data);
+  LiveStreamModel.fromMap(Map<String, dynamic> data)
+    : liveStream = LiveStream.fromJson(data),
+      startedAt = data['startedAt'] != null ? DateTime.parse(data['startedAt']) : null;
 
   LiveStreamModel copyWith({
     LiveStream? liveStream,
+    DateTime? startedAt,
   }) {
-    return LiveStreamModel(liveStream ?? this.liveStream);
-  }
-
-  @override
-  String toString() {
-    return 'LiveStreamModel(post: $liveStream)';
+    return LiveStreamModel(
+      liveStream ?? this.liveStream,
+      startedAt ?? this.startedAt,
+    );
   }
 }

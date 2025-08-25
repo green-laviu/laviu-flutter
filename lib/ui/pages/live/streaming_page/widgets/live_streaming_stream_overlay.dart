@@ -17,6 +17,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
     required this.onSwitchCamera,
     required this.isMuted,
     required this.isFrontCamera,
+    this.startedAt,
   }) : _scrollCtrl = scrollCtrl,
        _msgCtrl = msgCtrl;
 
@@ -27,6 +28,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
   final VoidCallback? onSwitchCamera;
   final bool isMuted;
   final bool isFrontCamera;
+  final DateTime? startedAt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,6 +49,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
             onSwitchCamera: onSwitchCamera,
             isMuted: isMuted,
             isFrontCamera: isFrontCamera,
+            startedAt: startedAt,
           ),
 
           // 제목/해시태그
