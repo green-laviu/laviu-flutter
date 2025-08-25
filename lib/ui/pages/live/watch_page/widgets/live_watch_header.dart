@@ -24,7 +24,7 @@ class LiveWatchHeader extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '${compact(info.viewerCount)}명 시청중',
+                    '${compact(1)}명 시청중', // TODO : 시연영상용 1 고정 -> 원래 값 : info.viewerCount
                     style: MText.caption(color: MColors.textAlternative),
                   ),
                   const SizedBox(width: 10),
@@ -88,9 +88,7 @@ class LiveWatchHeader extends StatelessWidget {
                   child: Text(
                     info.channelIsFollowing ? '팔로잉' : '팔로우',
                     style: MText.label2Medium(
-                      color: info.channelIsFollowing
-                          ? MColors.textAlternative
-                          : MColors.primaryStrong,
+                      color: info.channelIsFollowing ? MColors.textAlternative : MColors.primaryStrong,
                     ),
                   ),
                 ),

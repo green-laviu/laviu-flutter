@@ -5,10 +5,6 @@ import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/ui/pages/holder/following/following_page.dart';
 import 'package:laviu_flutter/ui/pages/holder/home/home_page.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/my_detail_page.dart';
-import 'package:laviu_flutter/ui/pages/user/detail_page/user_detail_page.dart';
-import 'package:laviu_flutter/ui/widgets/m_dev_floating_btn.dart';
-
-import '../notification/notification_page.dart';
 
 class MainHolder extends StatefulWidget {
   @override
@@ -37,8 +33,8 @@ class _MainHolderState extends State<MainHolder> {
           loadPages.contains(0) ? const HomePage() : Container(),
           loadPages.contains(1) ? const FollowingPage() : Container(),
           loadPages.contains(2) ? const MyDetailPage() : Container(),
-          loadPages.contains(3) ? const UserDetailPage() : Container(),
-          loadPages.contains(4) ? const NotificationPage() : Container(),
+          // loadPages.contains(3) ? const UserDetailPage() : Container(),
+          // loadPages.contains(4) ? const NotificationPage() : Container(),
         ],
       ),
       bottomNavigationBar: _bottomNavigationBar(),
