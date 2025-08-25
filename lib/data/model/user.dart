@@ -34,7 +34,7 @@ class User {
       accessToken = data['token'],
       isNewUser = data['isNewUser'],
       fcmToken = data['fcmToken'],
-      bio = data['bio'],
+      bio = data['bio'] ?? "",
       followerCount = data['followerCount'],
       isLive = data['isLive'];
 }
