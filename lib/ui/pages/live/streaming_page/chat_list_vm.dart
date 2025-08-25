@@ -39,6 +39,10 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
   Future<void> init(String streamKey, int streamId) async {
     await _chatRepository.connect(streamKey);
 
+    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+      appendNewMessages(messages);
+    };
+
     Map<String, dynamic> body = await _chatRepository.getChatList(streamId);
 
     if (body["status"] != 200) {
