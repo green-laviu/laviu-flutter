@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
-import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
 import 'package:laviu_flutter/data/repository/live_watch_providers.dart';
@@ -108,13 +107,10 @@ class _LiveWatchPageState extends ConsumerState<LiveWatchPage> {
 
                 // 채팅 리스트 (팀원 스타일)
                 Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: MSizes.gapL),
-                    child: LiveWatchChatList(
-                      scrollCtrl: scrollCtrl, // 필요시 상태로 빼도 OK
-                      streamKey: streamKey,
-                      streamId: _streamId,
-                    ),
+                  child: LiveWatchChatList(
+                    scrollCtrl: scrollCtrl, // 필요시 상태로 빼도 OK
+                    streamKey: streamKey,
+                    streamId: _streamId,
                   ),
                 ),
 
