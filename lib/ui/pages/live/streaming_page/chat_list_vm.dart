@@ -1,20 +1,27 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:laviu_flutter/_core/utils/m_device.dart';
+import 'package:laviu_flutter/data/gvm/session_gvm.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
 import 'package:laviu_flutter/data/repository/chat_repository.dart';
 import 'package:laviu_flutter/main.dart';
 import 'package:logger/logger.dart';
 
-final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, String>(() {
+final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, (String, int, bool)>(() {
   return ChatListVM();
 });
 
-class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
+class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int, bool)> {
   final mContext = navigatorKey.currentContext!;
 
   late final ChatRepository _chatRepository;
 
   @override
-  ChatListModel? build(String streamKey) {
+  ChatListModel? build((String streamKey, int streamId, bool isViewer) args) {
+    final streamKey = args.$1;
+    final streamId = args.$2;
+    final isViewer = args.$3;
+
     _chatRepository = ChatRepository();
 
     // 콜백 등록 (호출 X)
@@ -22,7 +29,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
       appendNewMessages(messages);
     };
 
-    init(streamKey);
+    init(streamKey, streamId, isViewer);
 
     ref.onDispose(() async {
       Logger().d("ChatListVM 파괴됨");
@@ -32,8 +39,36 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
     return null;
   }
 
-  Future<void> init(String streamKey) async {
-    await _chatRepository.connect(streamKey);
+  Future<void> init(String streamKey, int streamId, bool isViewer) async {
+    // 1) 세션에서 토큰 우선 사용(메모리), 없으면 저장소에서 fallback
+    final session = ref.read(sessionProvider);
+    String? token = session.user?.accessToken;
+    token ??= await getAccessToken();
+
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        const SnackBar(content: Text("인증 토큰이 없습니다. 다시 로그인 해주세요.")),
+      );
+      return;
+    }
+
+    await _chatRepository.connect(streamKey, token, joinOnConnect: isViewer);
+
+    // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    //   appendNewMessages(messages);
+    // };
+
+    Map<String, dynamic> body = await _chatRepository.getChatList(streamId);
+
+    if (body["status"] != 200) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("채팅 목록 조회 실패 : ${body["msg"]}")),
+      );
+      return;
+    }
+    final data = (body['data'] as List).map((e) => ChatMessage.fromMap(Map<String, dynamic>.from(e))).toList();
+
+    appendNewMessages(data);
   }
 
   void appendNewMessages(List<ChatMessage> incoming) {
@@ -58,9 +93,13 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, String> {
   Future<void> sendChat(String content) async {
     _chatRepository.sendChat(content);
 
-    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
-      appendNewMessages(messages);
-    };
+    // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    //   appendNewMessages(messages);
+    // };
+  }
+
+  void sendJoin() {
+    _chatRepository.sendJoin();
   }
 }
 

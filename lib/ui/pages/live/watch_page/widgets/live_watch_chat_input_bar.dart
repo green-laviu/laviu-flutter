@@ -10,15 +10,20 @@ class LiveWatchChatInputBar extends ConsumerWidget {
   const LiveWatchChatInputBar({
     super.key,
     required TextEditingController msgCtrl,
+    required ScrollController scrollCtrl,
     required this.streamKey,
-  }) : _msgCtrl = msgCtrl;
+    required this.streamId,
+  }) : _msgCtrl = msgCtrl,
+       _scrollCtrl = scrollCtrl;
 
   final TextEditingController _msgCtrl;
+  final ScrollController _scrollCtrl;
   final String streamKey;
+  final int streamId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.read(chatListProvider(streamKey).notifier);
+    final vm = ref.read(chatListProvider((streamKey, streamId, true)).notifier);
 
     void sendChat() {
       final text = _msgCtrl.text.trim();
@@ -30,6 +35,16 @@ class LiveWatchChatInputBar extends ConsumerWidget {
 
       FocusScope.of(context).unfocus(); // 키보드 내리기
 
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollCtrl.hasClients) return;
+        final offset = _scrollCtrl.position.maxScrollExtent;
+        _scrollCtrl.animateTo(
+          offset,
+          duration: MSizes.animDurationFast,
+          curve: Curves.easeOut,
+        );
+      });
+
       Logger().d("채팅 전송: $text");
     }
 
@@ -39,12 +54,12 @@ class LiveWatchChatInputBar extends ConsumerWidget {
         Expanded(
           child: TextField(
             controller: _msgCtrl,
-            style: MText.inputMedium(color: MColors.black),
+            style: MText.inputMedium(color: MColors.textNormal),
             cursorColor: MColors.white,
             decoration: InputDecoration(
               isDense: true,
               hintText: "메시지를 입력하세요",
-              hintStyle: MText.inputMedium(color: MColors.black),
+              hintStyle: MText.inputMedium(color: MColors.textNeutral),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: MSizes.gapM,
                 vertical: MSizes.gapM,
@@ -70,7 +85,7 @@ class LiveWatchChatInputBar extends ConsumerWidget {
           onTap: sendChat,
           child: Padding(
             padding: EdgeInsets.only(left: MSizes.gapL),
-            child: Icon(Icons.send, color: MColors.black, size: MSizes.iconM),
+            child: Icon(Icons.send, color: MColors.textNormal, size: MSizes.iconM),
           ),
         ),
       ],

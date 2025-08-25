@@ -16,37 +16,40 @@ class LiveWatchChatMsg extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: [
-          isStreamer
-              ? WidgetSpan(
-                  alignment: PlaceholderAlignment.baseline,
-                  baseline: TextBaseline.alphabetic,
-                  child: Icon(
-                    CupertinoIcons.mic_solid,
-                    color: MColors.primaryDanger,
-                    size: MSizes.fontM,
-                  ),
-                )
-              : WidgetSpan(child: SizedBox.shrink()),
-          TextSpan(
-            text: '$nickName     ',
-            style: TextStyle(
-              color: isStreamer ? MColors.primaryDanger : MColors.primaryStrong,
-              fontSize: MSizes.fontM,
-              fontWeight: FontWeight.w500,
+    return Padding(
+      padding: EdgeInsets.only(bottom: MSizes.gapS),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            isStreamer
+                ? WidgetSpan(
+                    alignment: PlaceholderAlignment.baseline,
+                    baseline: TextBaseline.alphabetic,
+                    child: Icon(
+                      CupertinoIcons.mic_solid,
+                      color: MColors.primaryDanger,
+                      size: MSizes.fontM,
+                    ),
+                  )
+                : WidgetSpan(child: SizedBox.shrink()),
+            TextSpan(
+              text: '$nickName     ',
+              style: TextStyle(
+                color: isStreamer ? MColors.primaryDanger : MColors.primaryStrong,
+                fontSize: MSizes.fontM,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          TextSpan(
-            text: msg,
-            style: TextStyle(
-              color: MColors.black,
-              fontSize: MSizes.fontM,
-              fontWeight: FontWeight.w500,
+            TextSpan(
+              text: msg,
+              style: TextStyle(
+                color: MColors.textNormal,
+                fontSize: MSizes.fontM,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

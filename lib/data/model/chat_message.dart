@@ -62,7 +62,7 @@ class ChatMessage {
       authorId: _toInt(data['authorId']),
       authorNickname: _toStr(data['authorNickname']),
       emailId: _toStr(data['emailId']),
-      isStreamer: _toBool(data['isStreamer']), // ✅ null/문자/숫자 모두 처리
+      isStreamer: _toBool(data['isStreamer']), // null/문자/숫자 모두 처리
       content: _toStr(data['content']),
       timestamp: _toDateTime(data['timestamp']),
     );

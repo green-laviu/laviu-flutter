@@ -10,17 +10,19 @@ class LiveWatchChatList extends ConsumerWidget {
     super.key,
     required ScrollController scrollCtrl,
     required this.streamKey,
+    required this.streamId,
   }) : _scrollCtrl = scrollCtrl;
 
   final ScrollController _scrollCtrl;
   final String streamKey;
+  final int streamId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ChatListModel? model = ref.watch(chatListProvider(streamKey));
+    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId, true)));
 
     // ref.listen :상태 변화가 생길 때 특정 동작을 실행 (prev: 이전 상태, next: 바뀐 후 상태)
-    ref.listen<ChatListModel?>(chatListProvider(streamKey), (prev, next) {
+    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId, true)), (prev, next) {
       if (next == null) return;
 
       final prevLen = prev?.chatMessageList.length ?? 0;
@@ -45,6 +47,12 @@ class LiveWatchChatList extends ConsumerWidget {
     if (model == null) {
       return const SizedBox.shrink();
     } else {
+      // 채팅 리스트 최초 30개 조회 시에도 스크롤 맨 아래 고정
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (_scrollCtrl.hasClients) {
+          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+        }
+      });
       return ListView.builder(
         controller: _scrollCtrl,
         padding: const EdgeInsets.fromLTRB(
@@ -73,7 +81,6 @@ bool _isNearBottom(ScrollController ctrl, {double threshold = 80}) {
   final position = ctrl.position; // position : 현재 스크롤 상태를 알려줌
   final distance =
       position.maxScrollExtent -
-      position
-          .pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
+      position.pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
   return distance <= threshold; // threshold : 임계값(여유 거리)
 }

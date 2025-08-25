@@ -3,8 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LiveParams {
   // 비디오
-  int videoBitrate = 1_000_000; // bps
-  Resolution videoResolution = Resolution.RESOLUTION_360;
+  int videoBitrate = 5_000_000; // bps
+  Resolution videoResolution = Resolution.RESOLUTION_1080;
   int videoFps = 30;
 
   // 커스텀 비트레이트 사용

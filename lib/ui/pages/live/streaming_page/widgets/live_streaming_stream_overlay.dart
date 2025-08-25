@@ -17,6 +17,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
     required this.onSwitchCamera,
     required this.isMuted,
     required this.isFrontCamera,
+    this.startedAt,
   }) : _scrollCtrl = scrollCtrl,
        _msgCtrl = msgCtrl;
 
@@ -27,6 +28,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
   final VoidCallback? onSwitchCamera;
   final bool isMuted;
   final bool isFrontCamera;
+  final DateTime? startedAt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,6 +49,7 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
             onSwitchCamera: onSwitchCamera,
             isMuted: isMuted,
             isFrontCamera: isFrontCamera,
+            startedAt: startedAt,
           ),
 
           // 제목/해시태그
@@ -65,13 +68,19 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
                     child: LiveStreamChatList(
                       scrollCtrl: _scrollCtrl,
                       streamKey: model.liveStream.streamKey,
+                      streamId: model.liveStream.streamId,
                     ),
                   ),
                   SizedBox(height: MSizes.gapM),
                   // 채팅 입력 바
-                  LiveStreamChatInputBar(
-                    msgCtrl: _msgCtrl,
-                    streamKey: model.liveStream.streamKey,
+                  Padding(
+                    padding: EdgeInsets.only(bottom: MSizes.gapM),
+                    child: LiveStreamChatInputBar(
+                      msgCtrl: _msgCtrl,
+                      scrollCtrl: _scrollCtrl,
+                      streamKey: model.liveStream.streamKey,
+                      streamId: model.liveStream.streamId,
+                    ),
                   ),
                 ],
               ),
