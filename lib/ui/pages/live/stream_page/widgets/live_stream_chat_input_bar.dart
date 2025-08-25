@@ -10,11 +10,14 @@ class LiveStreamChatInputBar extends ConsumerWidget {
   const LiveStreamChatInputBar({
     super.key,
     required TextEditingController msgCtrl,
+    required ScrollController scrollCtrl,
     required this.streamKey,
     required this.streamId,
-  }) : _msgCtrl = msgCtrl;
+  }) : _msgCtrl = msgCtrl,
+       _scrollCtrl = scrollCtrl;
 
   final TextEditingController _msgCtrl;
+  final ScrollController _scrollCtrl;
   final String streamKey;
   final int streamId;
 
@@ -22,15 +25,25 @@ class LiveStreamChatInputBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vm = ref.read(chatListProvider((streamKey, streamId)).notifier);
 
-    void sendChat() {
+    void sendChat() async {
       final text = _msgCtrl.text.trim();
       if (text.isEmpty) return;
 
-      vm.sendChat(text);
+      await vm.sendChat(text);
 
       _msgCtrl.clear();
 
       FocusScope.of(context).unfocus(); // 키보드 내리기
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollCtrl.hasClients) return;
+        final offset = _scrollCtrl.position.maxScrollExtent;
+        _scrollCtrl.animateTo(
+          offset,
+          duration: MSizes.animDurationFast,
+          curve: Curves.easeOut,
+        );
+      });
 
       Logger().d("채팅 전송: $text");
     }

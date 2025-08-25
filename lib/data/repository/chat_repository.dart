@@ -131,13 +131,14 @@ class ChatRepository {
       _client = null;
       _streamKey = null;
       // 콜백 참조도 끊어 메모리 누수 방지
-      onChatMessages = null;
+      // onChatMessages = null;
     }
   }
 
   /// 리소스 정리 (앱 종료 시)
   Future<void> dispose() async {
     await disconnect();
+    onChatMessages = null;
   }
 
   Future<Map<String, dynamic>> getChatList(int streamId) async {

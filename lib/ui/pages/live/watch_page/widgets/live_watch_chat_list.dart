@@ -47,6 +47,12 @@ class LiveWatchChatList extends ConsumerWidget {
     if (model == null) {
       return const SizedBox.shrink();
     } else {
+      // 채팅 리스트 최초 30개 조회 시에도 스크롤 맨 아래 고정
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (_scrollCtrl.hasClients) {
+          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+        }
+      });
       return ListView.builder(
         controller: _scrollCtrl,
         itemCount: model.chatMessageList.length,

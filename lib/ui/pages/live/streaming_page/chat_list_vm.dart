@@ -53,9 +53,9 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
 
     await _chatRepository.connect(streamKey, token);
 
-    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
-      appendNewMessages(messages);
-    };
+    // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    //   appendNewMessages(messages);
+    // };
 
     Map<String, dynamic> body = await _chatRepository.getChatList(streamId);
 
@@ -92,9 +92,9 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
   Future<void> sendChat(String content) async {
     _chatRepository.sendChat(content);
 
-    _chatRepository.onChatMessages = (List<ChatMessage> messages) {
-      appendNewMessages(messages);
-    };
+    // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
+    //   appendNewMessages(messages);
+    // };
   }
 }
 
