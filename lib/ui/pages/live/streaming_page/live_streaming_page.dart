@@ -159,8 +159,8 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
                         await vm.start(previewModel.title, previewModel.hashtagList);
 
                         // 4. state 세팅 확인
-                        // final streamModel = ref.read(liveStreamProvider);
-                        if (streamModel == null) {
+                        final model = ref.read(liveStreamProvider);
+                        if (model == null) {
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('방송 생성(start) 실패')),

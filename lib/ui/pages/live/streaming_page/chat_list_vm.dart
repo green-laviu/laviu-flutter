@@ -7,19 +7,20 @@ import 'package:laviu_flutter/data/repository/chat_repository.dart';
 import 'package:laviu_flutter/main.dart';
 import 'package:logger/logger.dart';
 
-final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, (String, int)>(() {
+final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatListModel?, (String, int, bool)>(() {
   return ChatListVM();
 });
 
-class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)> {
+class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int, bool)> {
   final mContext = navigatorKey.currentContext!;
 
   late final ChatRepository _chatRepository;
 
   @override
-  ChatListModel? build((String streamKey, int streamId) args) {
+  ChatListModel? build((String streamKey, int streamId, bool isViewer) args) {
     final streamKey = args.$1;
     final streamId = args.$2;
+    final isViewer = args.$3;
 
     _chatRepository = ChatRepository();
 
@@ -28,7 +29,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
       appendNewMessages(messages);
     };
 
-    init(streamKey, streamId);
+    init(streamKey, streamId, isViewer);
 
     ref.onDispose(() async {
       Logger().d("ChatListVM 파괴됨");
@@ -38,7 +39,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
     return null;
   }
 
-  Future<void> init(String streamKey, int streamId) async {
+  Future<void> init(String streamKey, int streamId, bool isViewer) async {
     // 1) 세션에서 토큰 우선 사용(메모리), 없으면 저장소에서 fallback
     final session = ref.read(sessionProvider);
     String? token = session.user?.accessToken;
@@ -51,7 +52,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
       return;
     }
 
-    await _chatRepository.connect(streamKey, token);
+    await _chatRepository.connect(streamKey, token, joinOnConnect: isViewer);
 
     // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
     //   appendNewMessages(messages);
@@ -95,6 +96,10 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
     // _chatRepository.onChatMessages = (List<ChatMessage> messages) {
     //   appendNewMessages(messages);
     // };
+  }
+
+  void sendJoin() {
+    _chatRepository.sendJoin();
   }
 }
 

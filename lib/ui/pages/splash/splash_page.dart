@@ -63,7 +63,7 @@ class _SplashPageState extends State<SplashPage> {
           ),
           child: AnimatedTextKit(
             repeatForever: true,
-            pause: MSizes.animDurationFast,
+            pause: MSizes.animDurationNormal,
             animatedTexts: [
               RotateAnimatedText('LAVIU'),
               RotateAnimatedText('LIVE VIEW'),

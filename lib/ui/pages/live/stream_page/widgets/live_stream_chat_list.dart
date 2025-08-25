@@ -19,10 +19,10 @@ class LiveStreamChatList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId)));
+    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId, false)));
 
     // ref.listen :상태 변화가 생길 때 특정 동작을 실행 (prev: 이전 상태, next: 바뀐 후 상태)
-    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId)), (prev, next) {
+    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId, false)), (prev, next) {
       if (next == null) return;
 
       final prevLen = prev?.chatMessageList.length ?? 0;

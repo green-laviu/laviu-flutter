@@ -23,7 +23,11 @@ class ChatRepository {
   bool get connected => _client?.connected == true;
 
   /// 연결: 인스턴스 생성 → 바로 채팅 채널 구독
-  Future<void> connect(String streamKey, String token) async {
+  Future<void> connect(
+    String streamKey,
+    String token, {
+    bool joinOnConnect = false,
+  }) async {
     // 이미 연결돼 있다면 재사용
     if (_streamKey == streamKey && connected) return;
 
@@ -37,7 +41,7 @@ class ChatRepository {
         url: '$baseUrl/ws',
         stompConnectHeaders: {'Authorization': '$token'},
         webSocketConnectHeaders: {'Authorization': '$token'},
-        onConnect: (frame) => _onConnect(frame, streamKey),
+        onConnect: (frame) => _onConnect(frame, streamKey, joinOnConnect: joinOnConnect),
         onWebSocketError: (err) => Logger().d('WS error: $err'),
         onStompError: (frame) => Logger().d('STOMP error: ${frame.body}'),
         onDisconnect: (frame) => Logger().d('WS disconnected'),
@@ -49,8 +53,9 @@ class ChatRepository {
     )..activate();
   }
 
-  void _onConnect(StompFrame frame, String streamKey) {
+  void _onConnect(StompFrame frame, String streamKey, {bool joinOnConnect = false}) {
     Logger().d('WS connected');
+    if (joinOnConnect) sendJoin(); // 시청자일 때만 sendJoin (시청자 목록에 시청자 추가)
     _subscribeChat(streamKey); // 연결 즉시 채팅 구독
   }
 
@@ -105,8 +110,15 @@ class ChatRepository {
 
   /// 채팅 참가 이벤트 전송: /pub/streams/{streamKey}/join
   void sendJoin() {
-    if (!connected || _streamKey == null) return;
+    if (!connected || _streamKey == null) {
+      Logger().w("sendJoin 실행 안됨 - connected: $connected, streamKey: $_streamKey");
+      return;
+    }
+
+    Logger().d("sendJoin 호출 - streamKey: $_streamKey");
     _client!.send(destination: '/pub/streams/${_streamKey!}/join');
+
+    Logger().d("sendJoin pub 완료 -> /pub/streams/${_streamKey!}/join");
   }
 
   /// 연결 종료 (채팅 구독 해제 → 비활성화 → 상태 초기화)

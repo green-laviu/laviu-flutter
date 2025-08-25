@@ -23,7 +23,7 @@ class LiveStreamChatInputBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.read(chatListProvider((streamKey, streamId)).notifier);
+    final vm = ref.read(chatListProvider((streamKey, streamId, false)).notifier);
 
     void sendChat() async {
       final text = _msgCtrl.text.trim();

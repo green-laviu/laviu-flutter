@@ -19,10 +19,10 @@ class LiveWatchChatList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId)));
+    ChatListModel? model = ref.watch(chatListProvider((streamKey, streamId, true)));
 
     // ref.listen :상태 변화가 생길 때 특정 동작을 실행 (prev: 이전 상태, next: 바뀐 후 상태)
-    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId)), (prev, next) {
+    ref.listen<ChatListModel?>(chatListProvider((streamKey, streamId, true)), (prev, next) {
       if (next == null) return;
 
       final prevLen = prev?.chatMessageList.length ?? 0;
@@ -81,7 +81,6 @@ bool _isNearBottom(ScrollController ctrl, {double threshold = 80}) {
   final position = ctrl.position; // position : 현재 스크롤 상태를 알려줌
   final distance =
       position.maxScrollExtent -
-      position
-          .pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
+      position.pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
   return distance <= threshold; // threshold : 임계값(여유 거리)
 }
