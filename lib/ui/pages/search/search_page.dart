@@ -4,6 +4,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/data/model/search.dart';
 import 'package:laviu_flutter/data/repository/search_providers.dart';
+import 'package:laviu_flutter/ui/pages/live/watch_page/live_watch_page.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -326,111 +327,126 @@ class _LiveRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
+    final dynamic liveId = int.tryParse(item.id) ?? item.id; // int/문자열 모두 허용
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6), // 기존 margin
+      child: Material(
         color: MColors.white,
-        border: Border.all(color: MColors.lineNormal),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Stack(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: MColors.lineNormal),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => LiveWatchPage(liveId: liveId)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(10), // 기존 padding
+            child: Row(
               children: [
-                SizedBox(
-                  width: 132,
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      item.thumbnailUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: MColors.lineNormal),
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 132,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.network(
+                            item.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                Container(color: MColors.lineNormal),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.55),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.remove_red_eye,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _compact(item.viewers),
+                                style: MText.label2Bold(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Positioned(
-                  left: 6,
-                  top: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.remove_red_eye,
-                          size: 14,
-                          color: Colors.white,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: MText.modal3Bold(color: MColors.textNeutral),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        item.channelName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: MText.caption(color: MColors.textAlternative),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 28,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (_, i) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(color: MColors.lineNormal),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              item.badges[i],
+                              style: MText.label2Regular(
+                                color: MColors.textAlternative,
+                              ),
+                            ),
+                          ),
+                          separatorBuilder: (_, __) => const SizedBox(width: 6),
+                          itemCount: item.badges.length,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _compact(item.viewers),
-                          style: MText.label2Bold(color: Colors.white),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: MText.modal3Bold(color: MColors.textNeutral),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item.channelName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: MText.caption(color: MColors.textAlternative),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 28,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (_, i) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(color: MColors.lineNormal),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        item.badges[i],
-                        style: MText.label2Regular(
-                          color: MColors.textAlternative,
-                        ),
-                      ),
-                    ),
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
-                    itemCount: item.badges.length,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
