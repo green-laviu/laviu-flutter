@@ -70,10 +70,13 @@ class LiveStreamingStreamOverlay extends ConsumerWidget {
                   ),
                   SizedBox(height: MSizes.gapM),
                   // 채팅 입력 바
-                  LiveStreamChatInputBar(
-                    msgCtrl: _msgCtrl,
-                    streamKey: model.liveStream.streamKey,
-                    streamId: model.liveStream.streamId,
+                  Padding(
+                    padding: EdgeInsets.only(bottom: MSizes.gapM),
+                    child: LiveStreamChatInputBar(
+                      msgCtrl: _msgCtrl,
+                      streamKey: model.liveStream.streamKey,
+                      streamId: model.liveStream.streamId,
+                    ),
                   ),
                 ],
               ),

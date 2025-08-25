@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:laviu_flutter/_core/utils/m_device.dart';
+import 'package:laviu_flutter/data/gvm/session_gvm.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
 import 'package:laviu_flutter/data/repository/chat_repository.dart';
 import 'package:laviu_flutter/main.dart';
@@ -37,7 +39,19 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int)
   }
 
   Future<void> init(String streamKey, int streamId) async {
-    await _chatRepository.connect(streamKey);
+    // 1) 세션에서 토큰 우선 사용(메모리), 없으면 저장소에서 fallback
+    final session = ref.read(sessionProvider);
+    String? token = session.user?.accessToken;
+    token ??= await getAccessToken();
+
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        const SnackBar(content: Text("인증 토큰이 없습니다. 다시 로그인 해주세요.")),
+      );
+      return;
+    }
+
+    await _chatRepository.connect(streamKey, token);
 
     _chatRepository.onChatMessages = (List<ChatMessage> messages) {
       appendNewMessages(messages);

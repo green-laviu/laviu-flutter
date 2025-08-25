@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:laviu_flutter/_core/utils/m_device.dart';
 import 'package:laviu_flutter/_core/utils/m_http.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
 import 'package:logger/logger.dart';
@@ -24,7 +23,7 @@ class ChatRepository {
   bool get connected => _client?.connected == true;
 
   /// 연결: 인스턴스 생성 → 바로 채팅 채널 구독
-  Future<void> connect(String streamKey) async {
+  Future<void> connect(String streamKey, String token) async {
     // 이미 연결돼 있다면 재사용
     if (_streamKey == streamKey && connected) return;
 
@@ -32,7 +31,6 @@ class ChatRepository {
     await disconnect();
 
     _streamKey = streamKey;
-    final token = await getAccessToken();
 
     _client = StompClient(
       config: StompConfig.sockJS(

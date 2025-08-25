@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/widgets/live_stream_setting_sheet.dart';
 import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
 
-class LiveStreamIconBar extends ConsumerWidget {
+class LiveStreamIconBar extends StatelessWidget {
   const LiveStreamIconBar({
     super.key,
     required this.onStop,
@@ -22,7 +21,7 @@ class LiveStreamIconBar extends ConsumerWidget {
   final bool isFrontCamera;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // final timeText = pubModel.startedAt != null ? DateFormat.Hms().format(pubModel.startedAt!) : "--:--:--";
 
     return Padding(
@@ -117,9 +116,14 @@ class LiveStreamIconBar extends ConsumerWidget {
                       builder: (BuildContext context) {
                         return MDialog(
                           title: '방송을 종료하시겠어요?',
-                          message: '지금 방송을 종료하면 저장되지 않아요. 정말 종료하시겠어요?',
-                          primaryText: '확인',
+                          message: '지금 방송을 종료하면 저장되지 않아요.\n 정말 방송을 종료하시겠어요?',
+                          primaryText: '종료',
+                          primaryColor: MColors.primaryDanger,
                           onPrimaryTap: onStop,
+                          secondaryText: '취소',
+                          onSecondaryTap: () {
+                            Navigator.pop(context);
+                          },
                         );
                       },
                     );
