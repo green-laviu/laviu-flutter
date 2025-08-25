@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:laviu_flutter/ui/pages/user/detail_page/widgets/user_detail_body.dart';
 
 class UserDetailPage extends StatelessWidget {
-  const UserDetailPage({super.key});
+  int userId;
+
+  UserDetailPage(this.userId, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +13,7 @@ class UserDetailPage extends StatelessWidget {
       initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(),
-        body: UserDetailBody(),
+        body: UserDetailBody(userId),
       ),
     );
   }
