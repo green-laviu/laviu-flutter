@@ -47,6 +47,12 @@ class LiveWatchChatList extends ConsumerWidget {
     } else {
       return ListView.builder(
         controller: _scrollCtrl,
+        padding: const EdgeInsets.fromLTRB(
+          12,
+          4,
+          12,
+          4,
+        ), // 👈 좌우(12), 위아래(4) 패딩 추가
         itemCount: model.chatMessageList.length,
         itemBuilder: (context, index) {
           final m = model.chatMessageList[index];
@@ -67,6 +73,7 @@ bool _isNearBottom(ScrollController ctrl, {double threshold = 80}) {
   final position = ctrl.position; // position : 현재 스크롤 상태를 알려줌
   final distance =
       position.maxScrollExtent -
-      position.pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
+      position
+          .pixels; // 바닥까지 남은 거리 계산 : 스크롤 가능한 최대 길이 (맨 아래 지점) - 지금 스크롤이 어디까지 내려와 있는지 (현재 위치)
   return distance <= threshold; // threshold : 임계값(여유 거리)
 }
