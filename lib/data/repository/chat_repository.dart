@@ -5,13 +5,18 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:laviu_flutter/_core/utils/m_http.dart';
 import 'package:laviu_flutter/data/model/chat_message.dart';
+import 'package:laviu_flutter/data/model/participant.dart';
 import 'package:logger/logger.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
-class ChatRepository {
+class WebSocketRepository {
   StompClient? _client;
-  StompUnsubscribe? _sub;
+
   String? _streamKey;
+
+  // 구독별 변수
+  StompUnsubscribe? _chatSub;
+  StompUnsubscribe? _participantsSub;
 
   // 서버 주소
   final baseUrl = dotenv.env['BASE_URL']!;
@@ -19,6 +24,7 @@ class ChatRepository {
   /// 외부(Riverpod VM)에서 주입할 수신 콜백
   /// - 초기 30개(배열) 또는 단건(객체)이 와도 항상 List로 전달
   void Function(List<ChatMessage> messages)? onChatMessages;
+  void Function(List<Participant> participants)? onParticipants;
 
   bool get connected => _client?.connected == true;
 
@@ -44,11 +50,17 @@ class ChatRepository {
         onConnect: (frame) => _onConnect(frame, streamKey, joinOnConnect: joinOnConnect),
         onWebSocketError: (err) => Logger().d('WS error: $err'),
         onStompError: (frame) => Logger().d('STOMP error: ${frame.body}'),
-        onDisconnect: (frame) => Logger().d('WS disconnected'),
+        onDisconnect: (frame) {
+          Logger().d('WS disconnected');
+          // 재연결 시 재구독을 위해 핸들 초기화
+          _chatSub = null;
+          _participantsSub = null;
+        },
+
         // 필요시 하트비트/재연결 옵션 추가 가능
+        // reconnectDelay: const Duration(seconds: 3),
         // heartbeatIncoming: 10000,
         // heartbeatOutgoing: 10000,
-        // reconnectDelay: const Duration(seconds: 3),
       ),
     )..activate();
   }
@@ -56,15 +68,16 @@ class ChatRepository {
   void _onConnect(StompFrame frame, String streamKey, {bool joinOnConnect = false}) {
     Logger().d('WS connected');
     if (joinOnConnect) sendJoin(); // 시청자일 때만 sendJoin (시청자 목록에 시청자 추가)
+    if (!joinOnConnect) subscribeParticipants(streamKey); // 스트리머만 시청자 목록 구독
     _subscribeChat(streamKey); // 연결 즉시 채팅 구독
   }
 
   void _subscribeChat(String streamKey) {
-    if (!connected || _sub != null) return;
+    if (!connected || _chatSub != null) return;
 
     final destination = '/sub/streams/$streamKey/chats';
     // subscribe() : 구독 시작 + 나중에 해제할 수 있는 함수(StompUnsubscribe _sub)를 돌려줌
-    _sub = _client!.subscribe(
+    _chatSub = _client!.subscribe(
       destination: destination,
       callback: (StompFrame frame) {
         final body = frame.body;
@@ -121,17 +134,83 @@ class ChatRepository {
     Logger().d("sendJoin pub 완료 -> /pub/streams/${_streamKey!}/join");
   }
 
+  // 시청자 목록 구독
+  void subscribeParticipants(String streamKey) {
+    if (!connected || _participantsSub != null) return;
+
+    final destination = '/sub/streams/$streamKey/participants';
+    _participantsSub = _client!.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        final body = frame.body;
+        if (body == null || onParticipants == null) return;
+
+        try {
+          final decoded = jsonDecode(body);
+          Logger().d("서버에서 받은 Participants decoded: $decoded");
+
+          if (decoded is List) {
+            final list = decoded.cast<Map>().map((e) => Participant.fromMap(Map<String, dynamic>.from(e))).toList();
+
+            onParticipants!.call(list);
+          } else if (decoded is Map) {
+            onParticipants!.call([Participant.fromMap(Map<String, dynamic>.from(decoded))]);
+          }
+        } catch (e) {
+          Logger().d('participants 파싱 오류: $e');
+        }
+      },
+    );
+
+    Logger().d('시청자 목록 구독 완료: $destination');
+  }
+
+  // 채팅 구독 해제
+  bool unsubscribeChat() {
+    if (_chatSub == null) return false;
+    try {
+      _chatSub!.call();
+      Logger().d('채팅 구독 해제');
+    } catch (e) {
+      Logger().e('채팅 구독 해제 오류 발생: $e');
+    } finally {
+      _chatSub = null;
+    }
+    return true;
+  }
+
+  // 시청자 목록 구독 해제
+  bool unsubscribeParticipants() {
+    if (_participantsSub == null) return false;
+    try {
+      _participantsSub!.call();
+      Logger().d('시청자 목록 구독 해제');
+    } catch (e) {
+      Logger().e('시청자 목록 구독 해제 오류 발생: $e');
+    } finally {
+      _participantsSub = null;
+    }
+    return true;
+  }
+
   /// 연결 종료 (채팅 구독 해제 → 비활성화 → 상태 초기화)
   Future<void> disconnect() async {
     try {
-      // 1. 구독 해제
-      if (_sub != null) {
+      // 1. 채팅 구독 해제
+      if (_chatSub != null) {
         try {
-          _sub!.call(); // 구독 해제
+          _chatSub!.call(); // 구독 해제
         } catch (_) {}
-        _sub = null; // 초기화
+        _chatSub = null; // 초기화
       }
 
+      // 1-2. 시청자 목록 구독 해제
+      if (_participantsSub != null) {
+        try {
+          _participantsSub!.call(); // 구독 해제
+        } catch (_) {}
+        _participantsSub = null; // 초기화
+      }
       // 2. STOMP 종료
       if (_client != null) {
         try {
@@ -151,6 +230,7 @@ class ChatRepository {
   Future<void> dispose() async {
     await disconnect();
     onChatMessages = null;
+    onParticipants = null;
   }
 
   Future<Map<String, dynamic>> getChatList(int streamId) async {

@@ -14,7 +14,7 @@ final chatListProvider = AutoDisposeNotifierProvider.family<ChatListVM, ChatList
 class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int, bool)> {
   final mContext = navigatorKey.currentContext!;
 
-  late final ChatRepository _chatRepository;
+  late final WebSocketRepository _chatRepository;
 
   @override
   ChatListModel? build((String streamKey, int streamId, bool isViewer) args) {
@@ -22,7 +22,7 @@ class ChatListVM extends AutoDisposeFamilyNotifier<ChatListModel?, (String, int,
     final streamId = args.$2;
     final isViewer = args.$3;
 
-    _chatRepository = ChatRepository();
+    _chatRepository = WebSocketRepository();
 
     // 콜백 등록 (호출 X)
     _chatRepository.onChatMessages = (List<ChatMessage> messages) {
