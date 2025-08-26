@@ -93,7 +93,7 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                   builder: (BuildContext context) {
                     return MDialog(
                       title: '채팅금지',
-                      message: '$nickname($username)님의\n채팅을 금지하시겠어요?\n현재 누적: n회\n(3회 시 자동 강제퇴장)',
+                      message: '$nickname($username)님의\n채팅을 금지하시겠어요?\n현재 누적: 0회\n(3회 시 자동 강제퇴장)',
                       primaryText: '채팅금지',
                       primaryColor: MColors.primaryDanger,
                       onPrimaryTap: () {

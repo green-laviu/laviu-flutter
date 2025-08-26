@@ -5,7 +5,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/ui/pages/holder/my/detail_page/my_detail_vm.dart';
-import 'package:laviu_flutter/ui/pages/holder/my/update_page/my_update_page.dart';
+import 'package:laviu_flutter/ui/pages/user/detail_page/user_detail_page.dart';
 import 'package:laviu_flutter/ui/widgets/m_btn.dart';
 import 'package:laviu_flutter/ui/widgets/m_live.dart';
 import 'package:laviu_flutter/ui/widgets/m_profile_row.dart';
@@ -49,7 +49,8 @@ class MyDetailBody extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => MyUpdatePage()),
+                      // MaterialPageRoute(builder: (_) => MyUpdatePage()),
+                      MaterialPageRoute(builder: (_) => UserDetailPage(1)), // TODO : 확인용
                     );
                   },
                 ),

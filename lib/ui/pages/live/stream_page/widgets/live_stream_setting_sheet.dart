@@ -44,7 +44,7 @@ class LiveStreamSettingSheet extends StatelessWidget {
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
               trailing: Text(
-                '고화질 (720p)',
+                '고화질 (1080p)',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
               onTap: () {
