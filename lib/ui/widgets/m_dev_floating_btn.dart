@@ -12,7 +12,7 @@ class MDevFloatingBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bool isDevMode = true;
+    const bool isDevMode = false;
 
     if (!isDevMode) return const SizedBox.shrink();
 

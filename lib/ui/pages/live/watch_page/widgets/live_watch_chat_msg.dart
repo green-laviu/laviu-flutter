@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 
@@ -34,7 +35,7 @@ class LiveWatchChatMsg extends StatelessWidget {
                 : WidgetSpan(child: SizedBox.shrink()),
             TextSpan(
               text: '$nickName     ',
-              style: TextStyle(
+              style: GoogleFonts.doHyeon(
                 color: isStreamer ? MColors.primaryDanger : MColors.primaryStrong,
                 fontSize: MSizes.fontM,
                 fontWeight: FontWeight.w500,
@@ -42,7 +43,7 @@ class LiveWatchChatMsg extends StatelessWidget {
             ),
             TextSpan(
               text: msg,
-              style: TextStyle(
+              style: GoogleFonts.doHyeon(
                 color: MColors.textNormal,
                 fontSize: MSizes.fontM,
                 fontWeight: FontWeight.w500,

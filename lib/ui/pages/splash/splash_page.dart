@@ -40,7 +40,7 @@ class _SplashPageState extends State<SplashPage> {
         _isInitialized = true;
       });
 
-      Future.delayed(MSizes.animDurationFast, () {
+      Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const LoginPage()),

@@ -1,10 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:video_player/video_player.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 import 'package:laviu_flutter/_core/utils/m_hls.dart';
+import 'package:video_player/video_player.dart';
 
 class LiveWatchHlsPlayer extends StatefulWidget {
   final String origin; // http://host:port
@@ -26,8 +27,7 @@ class LiveWatchHlsPlayer extends StatefulWidget {
   State<LiveWatchHlsPlayer> createState() => _LiveWatchHlsPlayerState();
 }
 
-class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
-    with WidgetsBindingObserver {
+class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer> with WidgetsBindingObserver {
   VideoPlayerController? _c;
   LiveQuality _quality = LiveQuality.p1080;
   bool _loading = false;
@@ -230,20 +230,21 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
         if (_show) _autoHide();
       },
       child: AspectRatio(
-        aspectRatio: (c?.value.aspectRatio ?? 16 / 9) == 0
-            ? 16 / 9
-            : (c?.value.aspectRatio ?? 16 / 9),
+        aspectRatio: 16 / 9,
         child: Stack(
           children: [
-            // 비디오 or 로딩/에러
             Positioned.fill(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null
-                  ? _ErrorView(message: _error!, onRetry: _init)
-                  : (c == null || !c.value.isInitialized)
+              child: c == null || !c.value.isInitialized
                   ? const SizedBox.shrink()
-                  : VideoPlayer(c),
+                  : FittedBox(
+                      fit: BoxFit.contain, // 전체가 보이게 (잘리지 않게)
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: c.value.size.width,
+                        height: c.value.size.height,
+                        child: VideoPlayer(c),
+                      ),
+                    ),
             ),
 
             // 상단 좌측 LIVE Pill
@@ -282,9 +283,7 @@ class _LiveWatchHlsPlayerState extends State<LiveWatchHlsPlayer>
                     iconSize: 56,
                     color: Colors.white,
                     icon: Icon(
-                      (c?.value.isPlaying ?? false)
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill,
+                      (c?.value.isPlaying ?? false) ? Icons.pause_circle_filled : Icons.play_circle_fill,
                     ),
                     onPressed: () {
                       if (c == null) return;

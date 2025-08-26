@@ -1,6 +1,7 @@
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/data/model/params/live_params.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
@@ -140,72 +141,78 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
               ),
             ),
             SafeArea(
-              child: IndexedStack(
-                index: _isStreaming ? 1 : 0,
-                children: [
-                  LiveStreamingPreviewOverlay(
-                    formKey: formKey,
-                    onStart: () async {
-                      // 1. 검증
-                      if (!formKey.currentState!.validate()) return;
+              child: AnimatedPadding(
+                duration: MSizes.animDurationFast,
+                curve: Curves.easeOut,
+                // 키보드 높이만큼 오버레이만 위로
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: IndexedStack(
+                  index: _isStreaming ? 1 : 0,
+                  children: [
+                    LiveStreamingPreviewOverlay(
+                      formKey: formKey,
+                      onStart: () async {
+                        // 1. 검증
+                        if (!formKey.currentState!.validate()) return;
 
-                      // 2. 프리뷰 → 스트림 오버레이 전환
-                      if (!mounted) return;
-                      setState(() => _isStreaming = true);
+                        // 2. 프리뷰 → 스트림 오버레이 전환
+                        if (!mounted) return;
+                        setState(() => _isStreaming = true);
 
-                      try {
-                        // 3. 서버에 방송 생성 요청 (streamKey 수령)
-                        final previewModel = ref.read(livePreviewProvider); // 최신 값
-                        await vm.start(previewModel.title, previewModel.hashtagList);
+                        try {
+                          // 3. 서버에 방송 생성 요청 (streamKey 수령)
+                          final previewModel = ref.read(livePreviewProvider); // 최신 값
+                          await vm.start(previewModel.title, previewModel.hashtagList);
 
-                        // 4. state 세팅 확인
-                        final model = ref.read(liveStreamProvider);
-                        if (model == null) {
+                          // 4. state 세팅 확인
+                          final model = ref.read(liveStreamProvider);
+                          if (model == null) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('방송 생성(start) 실패')),
+                            );
+                            setState(() => _isStreaming = false); // 실패 시 롤백
+                            return;
+                          }
+
+                          // 5. RTMP 송출 시작
+                          await startStreaming();
+                        } catch (e) {
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('방송 생성(start) 실패')),
+                            SnackBar(content: Text('방송 시작(startStreaming) 실패: $e')),
                           );
                           setState(() => _isStreaming = false); // 실패 시 롤백
-                          return;
                         }
-
-                        // 5. RTMP 송출 시작
-                        await startStreaming();
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('방송 시작(startStreaming) 실패: $e')),
-                        );
-                        setState(() => _isStreaming = false); // 실패 시 롤백
-                      }
-                    },
-                    onClose: () => Navigator.pop(context),
-                    onToggleMute: _initialized ? toggleMute : null,
-                    onSwitchCamera: _initialized ? switchCamera : null,
-                    isMuted: _isMuted,
-                    isFrontCamera: _isFrontCamera,
-                  ),
-                  LiveStreamingStreamOverlay(
-                    scrollCtrl: _scrollCtrl,
-                    msgCtrl: _msgCtrl,
-                    onStop: () async {
-                      await stopStreaming();
-                      if (!context.mounted) return;
-                      // final streamModel = ref.read(liveStreamProvider);
-                      if (streamModel != null) {
-                        await vm.end(streamModel.liveStream.streamId);
-                      } else {
-                        Logger().e("end 호출 문제 발생 : streamModel == null");
-                      }
-                      Navigator.pop(context);
-                    },
-                    onToggleMute: _initialized ? toggleMute : null,
-                    onSwitchCamera: _initialized ? switchCamera : null,
-                    isMuted: _isMuted,
-                    isFrontCamera: _isFrontCamera,
-                    startedAt: streamModel?.startedAt,
-                  ),
-                ],
+                      },
+                      onClose: () => Navigator.pop(context),
+                      onToggleMute: _initialized ? toggleMute : null,
+                      onSwitchCamera: _initialized ? switchCamera : null,
+                      isMuted: _isMuted,
+                      isFrontCamera: _isFrontCamera,
+                    ),
+                    LiveStreamingStreamOverlay(
+                      scrollCtrl: _scrollCtrl,
+                      msgCtrl: _msgCtrl,
+                      onStop: () async {
+                        await stopStreaming();
+                        if (!context.mounted) return;
+                        // final streamModel = ref.read(liveStreamProvider);
+                        if (streamModel != null) {
+                          await vm.end(streamModel.liveStream.streamId);
+                        } else {
+                          Logger().e("end 호출 문제 발생 : streamModel == null");
+                        }
+                        Navigator.pop(context);
+                      },
+                      onToggleMute: _initialized ? toggleMute : null,
+                      onSwitchCamera: _initialized ? switchCamera : null,
+                      isMuted: _isMuted,
+                      isFrontCamera: _isFrontCamera,
+                      startedAt: streamModel?.startedAt,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
