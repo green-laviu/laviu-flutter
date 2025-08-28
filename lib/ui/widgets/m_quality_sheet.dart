@@ -3,10 +3,23 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
-class MQualitySheet extends StatelessWidget {
+class MQualitySheet extends StatefulWidget {
   const MQualitySheet({
     super.key,
   });
+
+  @override
+  State<MQualitySheet> createState() => _MQualitySheetState();
+}
+
+class _MQualitySheetState extends State<MQualitySheet> {
+  String _selectedQuality = '1080p';
+
+  void _onSelectQuality(String quality) {
+    setState(() {
+      _selectedQuality = quality;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +44,7 @@ class MQualitySheet extends StatelessWidget {
                 style: MText.heading3Bold(color: MColors.textNormal),
               ),
             ),
-            // 고화질
+            // 고화질 (1080p)
             ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
@@ -41,10 +54,10 @@ class MQualitySheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: Icon(Icons.check, color: MColors.textNormal),
-              onTap: () {},
+              trailing: _selectedQuality == '1080p' ? Icon(Icons.check, color: MColors.textNormal) : null,
+              onTap: () => _onSelectQuality('1080p'),
             ),
-            // 일반화질
+            // 일반화질 (720p)
             ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
@@ -54,10 +67,10 @@ class MQualitySheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              // trailing: Icon(Icons.check, color: MColors.textNormal),
-              onTap: () {},
+              trailing: _selectedQuality == '720p' ? Icon(Icons.check, color: MColors.textNormal) : null,
+              onTap: () => _onSelectQuality('720p'),
             ),
-            // 저화질
+            // 저화질 (480p)
             ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
@@ -67,8 +80,8 @@ class MQualitySheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              // trailing: Icon(Icons.check, color: MColors.textNormal),
-              onTap: () {},
+              trailing: _selectedQuality == '480p' ? Icon(Icons.check, color: MColors.textNormal) : null,
+              onTap: () => _onSelectQuality('480p'),
             ),
           ],
         ),
