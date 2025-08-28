@@ -2,7 +2,6 @@ import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
-import 'package:laviu_flutter/data/gvm/session_gvm.dart';
 import 'package:laviu_flutter/data/model/params/live_params.dart';
 import 'package:laviu_flutter/ui/pages/live/preview_page/live_preview_fm.dart';
 import 'package:laviu_flutter/ui/pages/live/stream_page/live_stream_vm.dart';
@@ -95,17 +94,12 @@ class _LiveStreamingPageState extends ConsumerState<LiveStreamingPage> with Widg
     // 최종 streamKey 구성
     final streamKey = "${model.liveStream.streamKey}";
     Logger().d("streamKey : $streamKey");
-    final token = ref.read(sessionProvider).user!.accessToken;
 
     // 송출 시작
     await _streamCtrl.startStreaming(
       url: liveParams.rtmpUrl,
       streamKey: model.liveStream.streamKey,
     );
-    // await _streamCtrl.startStreaming(
-    //   url: liveParams.rtmpUrl,
-    //   streamKey: '${model.liveStream.streamKey}?token=$token',
-    // );
   }
 
   Future<void> stopStreaming() async => _streamCtrl.stopStreaming();

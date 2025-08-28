@@ -3,10 +3,23 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/_core/style/m_text.dart';
 
-class MFpsSheet extends StatelessWidget {
+class MFpsSheet extends StatefulWidget {
   const MFpsSheet({
     super.key,
   });
+
+  @override
+  State<MFpsSheet> createState() => _MFpsSheetState();
+}
+
+class _MFpsSheetState extends State<MFpsSheet> {
+  int _selectedFps = 30;
+
+  void _onSelectFps(int fps) {
+    setState(() {
+      _selectedFps = fps;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +51,8 @@ class MFpsSheet extends StatelessWidget {
                 '60fps',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              trailing: Icon(Icons.check, color: MColors.textNormal),
-              onTap: () {},
+              trailing: _selectedFps == 60 ? Icon(Icons.check, color: MColors.textNormal) : null,
+              onTap: () => _onSelectFps(60),
             ),
             // 30fps
             ListTile(
@@ -48,8 +61,8 @@ class MFpsSheet extends StatelessWidget {
                 '30fps',
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
-              trailing: Icon(Icons.check, color: MColors.textNormal),
-              onTap: () {},
+              trailing: _selectedFps == 30 ? Icon(Icons.check, color: MColors.textNormal) : null,
+              onTap: () => _onSelectFps(30),
             ),
           ],
         ),

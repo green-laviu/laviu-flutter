@@ -54,7 +54,7 @@ class MQualitySheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: Icon(Icons.check, color: MColors.textNormal),
+              // trailing: Icon(Icons.check, color: MColors.textNormal),
               onTap: () {},
             ),
             // 저화질
@@ -67,7 +67,7 @@ class MQualitySheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: Icon(Icons.check, color: MColors.textNormal),
+              // trailing: Icon(Icons.check, color: MColors.textNormal),
               onTap: () {},
             ),
           ],
