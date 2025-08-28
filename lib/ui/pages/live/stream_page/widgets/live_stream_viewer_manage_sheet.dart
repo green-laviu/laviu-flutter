@@ -4,7 +4,7 @@ import 'package:laviu_flutter/_core/style/m_colors.dart';
 import 'package:laviu_flutter/_core/style/m_sizes.dart';
 import 'package:laviu_flutter/ui/widgets/m_dialog.dart';
 
-class LiveStreamViewerManageSheet extends StatelessWidget {
+class LiveStreamViewerManageSheet extends StatefulWidget {
   final bool isKicked;
   final String nickname;
   final String username;
@@ -15,6 +15,17 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
     required this.nickname,
     required this.username,
   });
+
+  @override
+  State<LiveStreamViewerManageSheet> createState() => _LiveStreamViewerManageSheetState();
+}
+
+class _LiveStreamViewerManageSheetState extends State<LiveStreamViewerManageSheet> {
+  bool _kickedFlag = false;
+
+  void _setKicked(bool value) {
+    setState(() => _kickedFlag = value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +76,7 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                   SizedBox(width: MSizes.gapM),
                   // 닉네임 + 아이디
                   Text(
-                    '$nickname ',
+                    '${widget.nickname} ',
                     style: TextStyle(
                       fontSize: MSizes.fontM,
                       color: MColors.primaryStrong,
@@ -73,7 +84,7 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '($username)',
+                    '(${widget.username})',
                     style: TextStyle(fontSize: MSizes.fontM, color: MColors.textNeutral),
                   ),
                 ],
@@ -93,11 +104,13 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                   builder: (BuildContext context) {
                     return MDialog(
                       title: '채팅금지',
-                      message: '$nickname($username)님의\n채팅을 금지하시겠어요?\n현재 누적: 0회\n(3회 시 자동 강제퇴장)',
+                      message: '${widget.nickname}(${widget.username})님의\n채팅을 금지하시겠어요?\n현재 누적: 0회\n(3회 시 자동 강제퇴장)',
                       primaryText: '채팅금지',
                       primaryColor: MColors.primaryDanger,
                       onPrimaryTap: () {
                         // 채팅금지 로직
+                        Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       secondaryText: '취소',
                       onSecondaryTap: () {
@@ -112,11 +125,12 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
             ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: MSizes.gapM),
               title: Text(
-                isKicked ? '강제퇴장 취소' : '강제퇴장',
+                _kickedFlag ? '강제퇴장 취소' : '강제퇴장', // widget.isKicked
                 style: TextStyle(color: MColors.textNormal, fontWeight: FontWeight.w500),
               ),
               onTap: () {
-                if (isKicked) {
+                if (_kickedFlag) {
+                  // widget.isKicked
                   // 강제 퇴장 취소 로직
                   showDialog(
                     context: context,
@@ -124,11 +138,13 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                     builder: (BuildContext context) {
                       return MDialog(
                         title: '강제퇴장 취소',
-                        message: '$nickname($username)님의\n 강제퇴장을 취소하시겠어요?',
+                        message: '${widget.nickname}(${widget.username})님의\n 강제퇴장을 취소하시겠어요?',
                         primaryText: '예',
                         primaryColor: MColors.primaryDanger,
                         onPrimaryTap: () {
                           // 강제퇴장 취소 로직
+                          _setKicked(false); // 상태 토글
+                          Navigator.pop(context); // 다이얼로그만 닫기
                         },
                         secondaryText: '아니오',
                         onSecondaryTap: () {
@@ -145,11 +161,13 @@ class LiveStreamViewerManageSheet extends StatelessWidget {
                     builder: (BuildContext context) {
                       return MDialog(
                         title: '강제퇴장',
-                        message: '$nickname($username)님을\n 강제퇴장 하시겠어요?',
+                        message: '${widget.nickname}(${widget.username})님을\n 강제퇴장 하시겠어요?',
                         primaryText: '강제퇴장',
                         primaryColor: MColors.primaryDanger,
                         onPrimaryTap: () {
                           // 강제퇴장 로직
+                          _setKicked(true); // 상태 토글
+                          Navigator.pop(context); // 다이얼로그만 닫기
                         },
                         secondaryText: '취소',
                         onSecondaryTap: () {
